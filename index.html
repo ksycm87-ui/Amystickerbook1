@@ -1,0 +1,3058 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>에이미 칭찬 스티커북</title>
+  <!-- 단일 파일만으로도 홈 화면 추가 시 귀여운 앱 아이콘이 바로 표시되도록 동적 연결 -->
+  <link id="app-favicon" rel="icon" type="image/png" />
+  <link id="app-apple-icon" rel="apple-touch-icon" />
+  <link id="app-manifest" rel="manifest" />
+  <meta name="theme-color" content="#ffb5c8" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="에이미 스티커북" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: 아이들이 읽기 편한 Jua 폰트 & 깔끔한 Noto Sans KR -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Jua', 'Noto Sans KR', sans-serif;
+      background: linear-gradient(135deg, #fff6f9 0%, #f4f7ff 50%, #f3fbf7 100%);
+      min-height: 100vh;
+      color: #3d354b;
+      overflow-x: hidden;
+    }
+
+    /* 귀여운 바운스 & 팝 애니메이션 */
+    @keyframes popIn {
+      0% { transform: scale(0.25) rotate(-14deg); opacity: 0; }
+      65% { transform: scale(1.14) rotate(5deg); opacity: 1; }
+      85% { transform: scale(0.96) rotate(-2deg); opacity: 1; }
+      100% { transform: scale(1) rotate(var(--tilt, 0deg)); opacity: 1; }
+    }
+
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-4px); }
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { transform: scale(1); box-shadow: 0 6px 20px rgba(255, 138, 174, 0.45); }
+      50% { transform: scale(1.04); box-shadow: 0 10px 26px rgba(255, 138, 174, 0.7); }
+    }
+
+    /* 움직이는 귀여운 칭찬 이모티콘 애니메이션 4종 */
+    @keyframes stickerFloat {
+      0%, 100% { transform: translateY(0px) rotate(-2deg); }
+      50% { transform: translateY(-4px) rotate(2deg); }
+    }
+
+    @keyframes stickerWiggle {
+      0%, 100% { transform: rotate(-6deg) scale(1); }
+      50% { transform: rotate(6deg) scale(1.05); }
+    }
+
+    @keyframes stickerPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    @keyframes stickerBounce {
+      0%, 100% { transform: translateY(0px) scaleY(1); }
+      45% { transform: translateY(-5px) scaleY(1.04); }
+      75% { transform: translateY(1px) scaleY(0.96); }
+    }
+
+    .animate-pop-in {
+      animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    .animate-float {
+      animation: floatSlow 2.8s ease-in-out infinite;
+    }
+
+    .anim-sticker-float {
+      animation: stickerFloat 2.6s ease-in-out infinite;
+    }
+
+    .anim-sticker-wiggle {
+      animation: stickerWiggle 2.2s ease-in-out infinite;
+    }
+
+    .anim-sticker-pulse {
+      animation: stickerPulse 2.0s ease-in-out infinite;
+    }
+
+    .anim-sticker-bounce {
+      animation: stickerBounce 2.1s ease-in-out infinite;
+    }
+
+    .btn-claim-ready {
+      animation: pulseGlow 1.8s ease-in-out infinite;
+    }
+
+    /* 귀여운 칼선 스티커 그림자 & 호버 효과 */
+    .cute-sticker-icon {
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.25s ease;
+      filter: drop-shadow(0 3px 5px rgba(56, 42, 74, 0.2));
+    }
+
+    .cute-sticker-icon:hover {
+      transform: scale(1.14);
+      filter: drop-shadow(0 6px 10px rgba(56, 42, 74, 0.28));
+    }
+
+    /* 선물 교환권 티켓 반짝임 효과 */
+    @keyframes ticketShine {
+      0%, 100% { box-shadow: 0 12px 32px rgba(245, 158, 11, 0.28), 0 4px 12px rgba(244, 63, 94, 0.18); }
+      50% { box-shadow: 0 16px 40px rgba(245, 158, 11, 0.45), 0 6px 18px rgba(244, 63, 94, 0.28); }
+    }
+
+    .gift-voucher-card {
+      animation: ticketShine 2.6s ease-in-out infinite;
+    }
+
+    /* 드래그 중인 항목 스타일 */
+    .todo-item.dragging {
+      opacity: 0.45;
+      transform: scale(0.98);
+    }
+
+    .todo-item.drag-over {
+      border-top: 3px dashed #ff8aae;
+    }
+
+    /* 커스텀 스크롤바 */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #e2d9f3;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="pb-16 selection:bg-pink-200 selection:text-pink-900">
+  <!-- 꽃가루 축하 캔버스 -->
+  <canvas id="confetti-canvas" class="fixed inset-0 pointer-events-none z-50"></canvas>
+
+  <!-- 메인 컨테이너 -->
+  <div class="max-w-2xl mx-auto px-4 pt-5 sm:pt-7">
+    <!-- 상단 유틸리티 바 (연도 포함 날짜 & 효과음 토글 & 부모님용 초기화) -->
+    <div class="flex items-center justify-between gap-2 mb-4 flex-wrap">
+      <div class="inline-flex items-center gap-2 bg-white/90 backdrop-blur-sm px-3.5 py-1.5 rounded-full shadow-sm border border-pink-100">
+        <span class="text-base">📅</span>
+        <span id="today-date-label" class="text-sm sm:text-base text-slate-600 tracking-wide"></span>
+      </div>
+
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <button
+          id="sound-toggle-btn"
+          type="button"
+          class="inline-flex items-center gap-1.5 bg-white/90 hover:bg-white px-3.5 py-1.5 rounded-full shadow-sm border border-purple-100 text-sm text-purple-700 transition active:scale-95"
+          aria-label="효과음 켜기/끄기"
+        >
+          <span id="sound-icon">🔊</span>
+          <span id="sound-text">소리 켜짐</span>
+        </button>
+
+        <button
+          id="open-reset-all-btn"
+          type="button"
+          class="inline-flex items-center gap-1 bg-white/90 hover:bg-rose-50 px-3 py-1.5 rounded-full shadow-sm border border-rose-200 text-xs sm:text-sm text-rose-600 transition active:scale-95"
+          title="모든 기록 처음부터 초기화하기"
+        >
+          <span>🔄</span>
+          <span>초기화</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 헤더 타이틀 카드 -->
+    <header class="bg-white/90 backdrop-blur-md rounded-3xl p-5 sm:p-6 shadow-md border-2 border-pink-100 mb-5 text-center relative overflow-hidden">
+      <div class="absolute -top-6 -left-6 w-20 h-20 bg-yellow-100/70 rounded-full blur-xl pointer-events-none"></div>
+      <div class="absolute -bottom-6 -right-6 w-24 h-24 bg-pink-100/70 rounded-full blur-xl pointer-events-none"></div>
+
+      <div class="inline-flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
+        <span
+          id="daily-mascot"
+          class="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 text-xl sm:text-3xl bg-gradient-to-br from-amber-100 to-pink-100 rounded-2xl shadow-sm border border-amber-200/70 animate-float shrink-0"
+          title="오늘의 응원 하트"
+        >💖</span>
+        <h1 class="text-2xl sm:text-3xl text-slate-800 tracking-tight leading-snug">
+          스스로 척척! <span class="text-pink-500">Amy</span>의 오늘의 약속
+        </h1>
+        <span
+          class="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 text-xl sm:text-3xl bg-gradient-to-br from-amber-100 to-pink-100 rounded-2xl shadow-sm border border-amber-200/70 animate-float shrink-0"
+          title="오늘의 응원 하트"
+        >💖</span>
+      </div>
+      <p class="text-sm sm:text-base text-slate-500 mt-1.5">
+        오늘 정한 약속을 모두 지키면 칭찬 스티커를 받을 수 있어요!
+      </p>
+    </header>
+
+    <!-- 탭 전환 버튼 (오늘의 약속 / 내 스티커북 / AR 퀴즈북) -->
+    <nav class="grid grid-cols-3 gap-1.5 sm:gap-2.5 bg-white/80 p-1.5 rounded-2xl shadow-sm border border-purple-100 mb-5">
+      <button
+        id="tab-btn-todos"
+        type="button"
+        class="py-2.5 sm:py-3 px-2 sm:px-3 rounded-xl text-xs sm:text-base transition flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 bg-gradient-to-r from-pink-400 to-rose-400 text-white shadow-sm"
+      >
+        <span>📝 오늘의 약속</span>
+      </button>
+      <button
+        id="tab-btn-stickers"
+        type="button"
+        class="py-2.5 sm:py-3 px-2 sm:px-3 rounded-xl text-xs sm:text-base transition flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 text-slate-600 hover:bg-purple-50"
+      >
+        <span>🌟 내 스티커북</span>
+        <span id="nav-sticker-count" class="text-[11px] sm:text-xs bg-amber-100 text-amber-800 px-2 py-0.2 rounded-full">0/30</span>
+      </button>
+      <button
+        id="tab-btn-ar"
+        type="button"
+        class="py-2.5 sm:py-3 px-2 sm:px-3 rounded-xl text-xs sm:text-base transition flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 text-slate-600 hover:bg-sky-50"
+      >
+        <span>📚 AR 퀴즈북</span>
+        <span id="nav-ar-count" class="text-[11px] sm:text-xs bg-sky-100 text-sky-800 px-2 py-0.2 rounded-full">0/50</span>
+      </button>
+    </nav>
+
+    <!-- ==========================================
+         탭 1: 오늘의 약속 (숙제 점검)
+    =========================================== -->
+    <main id="view-todos" class="space-y-5">
+      <!-- 쉽게 추가하기 (원터치 숙제 버튼) -->
+      <section class="bg-white/90 rounded-3xl p-4 sm:p-5 shadow-sm border border-purple-100">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-base sm:text-lg text-slate-700 flex items-center gap-1.5">
+            <span>✨</span>
+            <span>터치 한 번으로 쉽게 추가하기</span>
+          </h2>
+          <span class="text-xs text-slate-400">눌러서 바로 담아요!</span>
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+          <button type="button" data-quick="구몬 국어" data-color="peach" class="quick-add-btn px-3.5 py-2 rounded-2xl bg-orange-50 hover:bg-orange-100 text-orange-800 border border-orange-200 text-sm sm:text-base transition active:scale-95 shadow-2xs">
+            📖 구몬 국어
+          </button>
+          <button type="button" data-quick="구몬 수학" data-color="sky" class="quick-add-btn px-3.5 py-2 rounded-2xl bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 text-sm sm:text-base transition active:scale-95 shadow-2xs">
+            🔢 구몬 수학
+          </button>
+          <button type="button" id="ar-quiz-toggle-btn" class="px-3.5 py-2 rounded-2xl bg-pink-50 hover:bg-pink-100 text-pink-800 border border-pink-200 text-sm sm:text-base transition active:scale-95 shadow-2xs flex items-center gap-1">
+            <span>📚 영어책 읽고 AR 퀴즈풀기</span>
+            <span id="ar-arrow" class="text-xs transition-transform">▼</span>
+          </button>
+          <button type="button" data-quick="Into Reading" data-color="lavender" class="quick-add-btn px-3.5 py-2 rounded-2xl bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 text-sm sm:text-base transition active:scale-95 shadow-2xs">
+            📘 Into Reading
+          </button>
+          <button type="button" data-quick="Waggle" data-color="mint" class="quick-add-btn px-3.5 py-2 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-sm sm:text-base transition active:scale-95 shadow-2xs">
+            🎮 Waggle
+          </button>
+          <button type="button" data-quick="Amira" data-color="lemon" class="quick-add-btn px-3.5 py-2 rounded-2xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-sm sm:text-base transition active:scale-95 shadow-2xs">
+            🗣️ Amira
+          </button>
+          <button type="button" data-quick="Journal 쓰기" data-color="peach" class="quick-add-btn px-3.5 py-2 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 text-sm sm:text-base transition active:scale-95 shadow-2xs">
+            ✍️ Journal 쓰기
+          </button>
+        </div>
+
+        <!-- 영어책 AR 퀴즈 권수 선택 서랍 (1~3권) -->
+        <div id="ar-book-drawer" class="hidden mt-3 p-3.5 rounded-2xl bg-pink-50/90 border border-pink-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          <div class="text-sm sm:text-base text-pink-900">
+            📚 오늘 영어책 몇 권 읽고 AR 퀴즈를 풀까요?
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" data-ar-count="1" class="ar-count-btn px-3.5 py-1.5 rounded-xl bg-white hover:bg-pink-500 hover:text-white text-pink-700 border border-pink-300 text-sm sm:text-base transition active:scale-95 shadow-2xs">
+              1권 추가
+            </button>
+            <button type="button" data-ar-count="2" class="ar-count-btn px-3.5 py-1.5 rounded-xl bg-white hover:bg-pink-500 hover:text-white text-pink-700 border border-pink-300 text-sm sm:text-base transition active:scale-95 shadow-2xs">
+              2권 추가
+            </button>
+            <button type="button" data-ar-count="3" class="ar-count-btn px-3.5 py-1.5 rounded-xl bg-white hover:bg-pink-500 hover:text-white text-pink-700 border border-pink-300 text-sm sm:text-base transition active:scale-95 shadow-2xs">
+              3권 추가
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 직접 할 일 입력 폼 -->
+      <section class="bg-white/90 rounded-3xl p-4 sm:p-5 shadow-sm border border-purple-100">
+        <form id="todo-form" class="space-y-3">
+          <div class="flex gap-2">
+            <input
+              id="todo-input"
+              type="text"
+              maxlength="60"
+              placeholder="직접 할 일을 적어보세요 (예: 책 1권 읽기)"
+              class="flex-1 px-4 py-3 rounded-2xl bg-slate-50 border-2 border-purple-100 focus:border-pink-300 focus:bg-white focus:outline-none text-base sm:text-lg text-slate-700 placeholder:text-slate-400"
+            />
+            <button
+              type="submit"
+              class="px-5 py-3 rounded-2xl bg-gradient-to-r from-purple-400 to-pink-400 hover:from-purple-500 hover:to-pink-500 text-white text-base sm:text-lg shadow-sm transition active:scale-95 shrink-0"
+            >
+              추가 +
+            </button>
+          </div>
+
+          <!-- 파스텔 카드 색상 선택 -->
+          <div class="flex items-center justify-between flex-wrap gap-2 pt-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs sm:text-sm text-slate-500">카드 색깔:</span>
+              <div id="color-picker" class="flex items-center gap-2">
+                <button type="button" data-color="pink" class="color-dot w-7 h-7 rounded-full bg-pink-200 border-2 border-transparent transition" title="핑크"></button>
+                <button type="button" data-color="lavender" class="color-dot w-7 h-7 rounded-full bg-purple-200 border-2 border-purple-500 scale-110 transition" title="라벤더"></button>
+                <button type="button" data-color="peach" class="color-dot w-7 h-7 rounded-full bg-orange-200 border-2 border-transparent transition" title="피치"></button>
+                <button type="button" data-color="mint" class="color-dot w-7 h-7 rounded-full bg-emerald-200 border-2 border-transparent transition" title="민트"></button>
+                <button type="button" data-color="sky" class="color-dot w-7 h-7 rounded-full bg-sky-200 border-2 border-transparent transition" title="스카이"></button>
+                <button type="button" data-color="lemon" class="color-dot w-7 h-7 rounded-full bg-amber-200 border-2 border-transparent transition" title="레몬"></button>
+              </div>
+            </div>
+            <span class="text-xs text-slate-400">카드를 끌거나 ↑↓ 버튼으로 순서 이동</span>
+          </div>
+        </form>
+      </section>
+
+      <!-- 진행률 & [스티커 받기!] 버튼 영역 -->
+      <section class="bg-white/95 rounded-3xl p-4 sm:p-5 shadow-sm border-2 border-amber-100">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex-1">
+            <div class="flex items-center justify-between mb-1.5">
+              <span id="cheer-message" class="text-sm sm:text-base text-slate-700">
+                오늘의 약속을 차근차근 지켜보아요! ✨
+              </span>
+              <span id="progress-count" class="text-sm sm:text-base text-pink-600 bg-pink-50 px-2.5 py-0.5 rounded-full">
+                0 / 0 완료
+              </span>
+            </div>
+            <div class="w-full h-3.5 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200/70">
+              <div
+                id="progress-bar"
+                class="h-full rounded-full bg-gradient-to-r from-amber-300 via-pink-400 to-purple-400 transition-all duration-500"
+                style="width: 0%"
+              ></div>
+            </div>
+          </div>
+
+          <!-- 100% 완료 시 활성화되는 스티커 받기 버튼 -->
+          <button
+            id="claim-sticker-btn"
+            type="button"
+            disabled
+            class="px-4 py-3 rounded-2xl text-base sm:text-lg transition flex items-center justify-center gap-1.5 shrink-0 bg-slate-100 text-slate-400 border-2 border-slate-200 cursor-not-allowed"
+          >
+            <span>🌟</span>
+            <span id="claim-btn-text">스티커 받기!</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- 할 일 목록 리스트 -->
+      <section>
+        <ul id="todo-list" class="space-y-3"></ul>
+
+        <!-- 비어 있을 때 안내 -->
+        <div id="empty-state" class="hidden bg-white/80 rounded-3xl p-8 text-center border-2 border-dashed border-purple-200">
+          <div class="text-4xl mb-2">🌈</div>
+          <p class="text-lg text-slate-600">아직 오늘의 약속이 비어 있어요!</p>
+          <p class="text-sm text-slate-400 mt-1">위에서 숙제 버튼을 누르거나 직접 할 일을 추가해 보세요.</p>
+        </div>
+      </section>
+    </main>
+
+    <!-- ==========================================
+         탭 2: 내 스티커북 (30칸 한 달 목표)
+    =========================================== -->
+    <main id="view-stickers" class="hidden space-y-5">
+      <!-- 한 달 목표 선물 카드 -->
+      <section class="bg-gradient-to-r from-amber-50 via-yellow-50 to-orange-50 rounded-3xl p-4 sm:p-5 shadow-sm border-2 border-amber-200/80">
+        <div class="flex items-start sm:items-center justify-between gap-3 flex-col sm:flex-row">
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-xs sm:text-sm bg-amber-200/80 text-amber-900 px-2.5 py-0.5 rounded-full">
+                🎁 30개 완성 목표 선물
+              </span>
+              <button
+                id="completed-books-badge"
+                type="button"
+                class="text-xs sm:text-sm bg-white hover:bg-purple-50 text-purple-700 px-3 py-0.5 rounded-full border border-purple-200 shadow-2xs transition active:scale-95 cursor-pointer"
+                title="눌러서 완성한 스티커북 기록 보기"
+              >
+                완성한 스티커북: 0권 🏆 · 기록보기
+              </button>
+            </div>
+            <p id="target-gift-title" class="text-lg sm:text-xl text-slate-800 mt-2">
+              맛있는 아이스크림 & 서점 나들이 🍦📚
+            </p>
+          </div>
+
+          <button
+            id="edit-gift-btn"
+            type="button"
+            class="px-3.5 py-2 rounded-2xl bg-white hover:bg-amber-100 text-amber-900 border border-amber-300 text-sm sm:text-base transition active:scale-95 shrink-0 shadow-2xs"
+          >
+            ✏️ 선물 정하기
+          </button>
+        </div>
+      </section>
+
+      <!-- 30개 완성 시 나타나는 선물 교환권 & 새 스티커북 시작하기 배너 -->
+      <section
+        id="daily-complete-banner"
+        class="hidden bg-gradient-to-r from-pink-100 via-amber-100 to-rose-100 rounded-3xl p-4 sm:p-5 shadow-md border-2 border-amber-300"
+      >
+        <div class="flex flex-col gap-3">
+          <div class="flex items-center gap-2.5">
+            <span class="text-2xl sm:text-3xl anim-sticker-bounce">🎊</span>
+            <div>
+              <h3 class="text-base sm:text-lg text-slate-800">와아! 30개 스티커북을 모두 완성했어요!</h3>
+              <p class="text-xs sm:text-sm text-slate-600">
+                부모님께 선물 교환권을 보여드린 뒤, 새 스티커북을 시작해 보세요!
+              </p>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <button
+              id="open-daily-voucher-btn"
+              type="button"
+              class="py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-500 hover:to-orange-500 text-white text-sm sm:text-base shadow-sm transition active:scale-95 flex items-center justify-center gap-1.5"
+            >
+              <span>🎟️</span>
+              <span>선물교환권 보기</span>
+            </button>
+            <button
+              id="start-new-daily-book-btn"
+              type="button"
+              class="py-3 px-4 rounded-2xl bg-white hover:bg-pink-50 text-pink-700 border-2 border-pink-300 text-sm sm:text-base shadow-2xs transition active:scale-95 flex items-center justify-center gap-1.5"
+            >
+              <span>✨</span>
+              <span>새 스티커북 시작하기</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 30칸 칭찬 스티커판 -->
+      <section class="bg-[#fffdf7] rounded-3xl p-4 sm:p-6 shadow-md border-2 border-amber-200/70">
+        <div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
+          <h2 class="text-lg sm:text-xl text-slate-800 flex items-center gap-2">
+            <span>✨ Amy의 칭찬 스티커북</span>
+          </h2>
+
+          <div class="flex items-center gap-2 flex-wrap">
+            <button
+              id="open-preview-stickers-btn"
+              type="button"
+              class="px-3 py-1.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 text-xs sm:text-sm transition active:scale-95"
+            >
+              👀 스티커 미리보기 (17종)
+            </button>
+            <button
+              id="open-delete-latest-btn"
+              type="button"
+              class="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs sm:text-sm transition active:scale-95"
+            >
+              🧹 스티커 지우기
+            </button>
+          </div>
+        </div>
+
+        <p class="text-xs sm:text-sm text-slate-500 mb-4">
+          하루에 한 개씩 30개를 모두 모으면 목표 선물을 받을 수 있어요! (붙은 스티커를 누르면 지울 수 있어요)
+        </p>
+
+        <!-- 30칸 그리드 -->
+        <div id="sticker-grid" class="grid grid-cols-5 gap-2.5 sm:gap-3.5"></div>
+      </section>
+    </main>
+
+    <!-- ==========================================
+         탭 3: AR 퀴즈북 (50칸 영어책 AR 퀴즈 목표)
+    =========================================== -->
+    <main id="view-ar" class="hidden space-y-5">
+      <!-- 50개 목표 선물 카드 -->
+      <section class="bg-gradient-to-r from-sky-50 via-indigo-50 to-amber-50 rounded-3xl p-4 sm:p-5 shadow-sm border-2 border-sky-200/80">
+        <div class="flex items-start sm:items-center justify-between gap-3 flex-col sm:flex-row">
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-xs sm:text-sm bg-sky-200/80 text-sky-900 px-2.5 py-0.5 rounded-full">
+                🎁 50개 완성 목표 선물
+              </span>
+              <button
+                id="ar-completed-books-badge"
+                type="button"
+                class="text-xs sm:text-sm bg-white hover:bg-indigo-50 text-indigo-700 px-3 py-0.5 rounded-full border border-indigo-200 shadow-2xs transition active:scale-95 cursor-pointer"
+                title="눌러서 완성한 AR 퀴즈북 기록 보기"
+              >
+                완성한 AR 퀴즈북: 0권 🏆 · 기록보기
+              </button>
+            </div>
+            <p id="ar-target-gift-title" class="text-lg sm:text-xl text-slate-800 mt-2">
+              멋진 책 & 장난감 선물 🎁
+            </p>
+          </div>
+
+          <button
+            id="edit-ar-gift-btn"
+            type="button"
+            class="px-3.5 py-2 rounded-2xl bg-white hover:bg-sky-100 text-sky-900 border border-sky-300 text-sm sm:text-base transition active:scale-95 shrink-0 shadow-2xs"
+          >
+            ✏️ 선물 정하기
+          </button>
+        </div>
+      </section>
+
+      <!-- 50개 완성 시 나타나는 AR 선물 교환권 & 새 스티커북 시작하기 배너 -->
+      <section
+        id="ar-complete-banner"
+        class="hidden bg-gradient-to-r from-sky-100 via-amber-100 to-indigo-100 rounded-3xl p-4 sm:p-5 shadow-md border-2 border-sky-300"
+      >
+        <div class="flex flex-col gap-3">
+          <div class="flex items-center gap-2.5">
+            <span class="text-2xl sm:text-3xl anim-sticker-bounce">🎊</span>
+            <div>
+              <h3 class="text-base sm:text-lg text-slate-800">와아! AR 퀴즈북 50개를 모두 완성했어요!</h3>
+              <p class="text-xs sm:text-sm text-slate-600">
+                부모님께 선물 교환권을 보여드린 뒤, 새 AR 퀴즈북을 시작해 보세요!
+              </p>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <button
+              id="open-ar-voucher-btn"
+              type="button"
+              class="py-3 px-4 rounded-2xl bg-gradient-to-r from-sky-400 to-indigo-400 hover:from-sky-500 hover:to-indigo-500 text-white text-sm sm:text-base shadow-sm transition active:scale-95 flex items-center justify-center gap-1.5"
+            >
+              <span>🎟️</span>
+              <span>선물교환권 보기</span>
+            </button>
+            <button
+              id="start-new-ar-book-btn"
+              type="button"
+              class="py-3 px-4 rounded-2xl bg-white hover:bg-sky-50 text-sky-700 border-2 border-sky-300 text-sm sm:text-base shadow-2xs transition active:scale-95 flex items-center justify-center gap-1.5"
+            >
+              <span>✨</span>
+              <span>새 AR 퀴즈북 시작하기</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- AR 퀴즈 80% 이상 통과 스티커 받기 안내 카드 -->
+      <section class="bg-white/95 rounded-3xl p-4 sm:p-5 shadow-sm border-2 border-sky-200/80">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-200 text-xs sm:text-sm mb-1.5">
+              <span>✨ 약속 규칙</span>
+              <span>정답률 80% 이상일 때만 눌러요!</span>
+            </div>
+            <p class="text-base sm:text-lg text-slate-800">
+              📖 스스로 영어책을 읽고 AR 퀴즈 <span class="text-sky-600">80% 이상</span> 통과했나요?
+            </p>
+            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
+              80% 이상 맞혔다면 오른쪽 버튼을 눌러 스티커를 받으세요!
+            </p>
+          </div>
+
+          <button
+            id="claim-ar-sticker-btn"
+            type="button"
+            class="px-4 py-3 rounded-2xl text-base sm:text-lg transition flex items-center justify-center gap-1.5 shrink-0 bg-gradient-to-r from-sky-400 via-indigo-400 to-purple-400 hover:from-sky-500 hover:to-purple-500 text-white border-2 border-sky-200 shadow-md active:scale-95 cursor-pointer"
+          >
+            <span>🎉</span>
+            <span>스티커 받기</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- 50칸 AR 퀴즈 스티커판 -->
+      <section class="bg-[#fffdf7] rounded-3xl p-4 sm:p-6 shadow-md border-2 border-amber-200/70">
+        <div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
+          <h2 class="text-lg sm:text-xl text-slate-800 flex items-center gap-2">
+            <span>📚 Amy의 AR 퀴즈북</span>
+          </h2>
+
+          <div class="flex items-center gap-2 flex-wrap">
+            <button
+              id="open-preview-ar-stickers-btn"
+              type="button"
+              class="px-3 py-1.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 text-xs sm:text-sm transition active:scale-95"
+            >
+              👀 스티커 미리보기 (17종)
+            </button>
+            <button
+              id="open-delete-latest-ar-btn"
+              type="button"
+              class="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs sm:text-sm transition active:scale-95"
+            >
+              🧹 스티커 지우기
+            </button>
+          </div>
+        </div>
+
+        <p class="text-xs sm:text-sm text-slate-500 mb-4 leading-relaxed">
+          스스로 책을 읽고 AR 퀴즈 정답률 80% 이상을 달성할 때마다 한 개씩!<br />
+          50개를 모두 모으면 목표 선물을 받을 수 있어요! (붙은 스티커를 누르면 지울 수 있어요)
+        </p>
+
+        <!-- 50칸 그리드 -->
+        <div id="ar-sticker-grid" class="grid grid-cols-5 gap-2.5 sm:gap-3.5"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ==========================================
+       모달 1: 스티커 획득 축하 팝업
+  =========================================== -->
+  <div id="sticker-modal" class="fixed inset-0 bg-slate-900/45 backdrop-blur-xs z-40 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl border-4 border-amber-200 relative">
+      <div id="modal-badge" class="inline-block px-3.5 py-1 rounded-full bg-pink-100 text-pink-700 text-sm mb-3">
+        📅 오늘의 칭찬 스티커
+      </div>
+
+      <div id="modal-sticker-preview" class="w-40 h-40 mx-auto my-2 flex items-center justify-center"></div>
+
+      <h3 id="modal-title" class="text-2xl text-slate-800 mt-2">참 잘했어요! 최고예요!</h3>
+      <p id="modal-desc" class="text-sm sm:text-base text-slate-500 mt-1.5 leading-relaxed">
+        오늘의 약속을 모두 지켜서 칭찬 스티커를 받았어요!
+      </p>
+
+      <div class="mt-5 flex flex-col gap-2">
+        <button
+          id="modal-go-book-btn"
+          type="button"
+          class="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-pink-400 hover:from-amber-500 hover:to-pink-500 text-white text-lg shadow-md transition active:scale-95"
+        >
+          스티커북 보러가기 🌟
+        </button>
+        <button
+          id="modal-close-btn"
+          type="button"
+          class="w-full py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-base transition"
+        >
+          닫기
+        </button>
+      </div>
+
+      <button
+        id="modal-undo-claim-btn"
+        type="button"
+        class="mt-3 text-xs text-slate-400 hover:text-rose-500 underline transition"
+      >
+        어머, 잘못 눌렀어요! 스티커 받기 취소하기
+      </button>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       모달 2: 목표 선물 정하기 팝업
+  =========================================== -->
+  <div id="gift-modal" class="fixed inset-0 bg-slate-900/45 backdrop-blur-xs z-40 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border-4 border-amber-200">
+      <h3 class="text-xl text-slate-800 mb-1">🎁 목표 선물 정하기</h3>
+      <p id="gift-modal-desc" class="text-sm text-slate-500 mb-4">스티커를 다 모으면 받을 선물을 적어주세요!</p>
+
+      <input
+        id="gift-input"
+        type="text"
+        maxlength="40"
+        placeholder="예: 레고 장난감, 키즈카페 가기"
+        class="w-full px-4 py-3 rounded-2xl bg-amber-50/70 border-2 border-amber-200 focus:border-amber-400 focus:bg-white focus:outline-none text-base text-slate-800 mb-3"
+      />
+
+      <div class="flex flex-wrap gap-1.5 mb-5">
+        <button type="button" data-gift-preset="맛있는 아이스크림 파티 🍦" class="gift-preset-btn text-xs px-2.5 py-1.5 rounded-xl bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-200">🍦 아이스크림</button>
+        <button type="button" data-gift-preset="서점에서 좋아하는 책 고르기 📚" class="gift-preset-btn text-xs px-2.5 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200">📚 책 선물</button>
+        <button type="button" data-gift-preset="신나는 키즈카페 나들이 🎡" class="gift-preset-btn text-xs px-2.5 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200">🎡 키즈카페</button>
+        <button type="button" data-gift-preset="멋진 장난감 선물 🧸" class="gift-preset-btn text-xs px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200">🧸 장난감</button>
+      </div>
+
+      <div class="flex gap-2">
+        <button
+          id="gift-cancel-btn"
+          type="button"
+          class="flex-1 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-base transition"
+        >
+          취소
+        </button>
+        <button
+          id="gift-save-btn"
+          type="button"
+          class="flex-1 py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-500 text-white text-base shadow-sm transition"
+        >
+          저장하기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       모달 3: 스티커 지우기 확인 팝업
+  =========================================== -->
+  <div id="delete-sticker-modal" class="fixed inset-0 bg-slate-900/45 backdrop-blur-xs z-40 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-xs w-full p-6 text-center shadow-2xl border-4 border-rose-200">
+      <h3 class="text-xl text-slate-800">이 스티커를 지울까요?</h3>
+      <p id="delete-sticker-info" class="text-sm text-slate-500 mt-1">
+        실수로 받은 스티커라면 지우고 다시 받을 수 있어요!
+      </p>
+
+      <div id="delete-sticker-preview" class="w-32 h-32 mx-auto my-3 flex items-center justify-center"></div>
+
+      <div class="flex gap-2 mt-4">
+        <button
+          id="delete-sticker-cancel-btn"
+          type="button"
+          class="flex-1 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-base transition"
+        >
+          그냥 둘래요
+        </button>
+        <button
+          id="delete-sticker-confirm-btn"
+          type="button"
+          class="flex-1 py-2.5 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white text-base shadow-sm transition"
+        >
+          네, 지울게요
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       모달 4: 17가지 전체 스티커 미리보기(도감) 팝업
+  =========================================== -->
+  <div id="preview-stickers-modal" class="fixed inset-0 bg-slate-900/45 backdrop-blur-xs z-40 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border-4 border-amber-200 flex flex-col max-h-[88vh]">
+      <div class="flex items-start justify-between gap-2 mb-2">
+        <div>
+          <h3 class="text-xl sm:text-2xl text-slate-800">👀 칭찬 스티커 미리보기</h3>
+          <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
+            스티커를 눌러서 빼고 싶은 그림을 끄거나 켤 수 있어요! (<span id="enabled-sticker-count" class="text-pink-600">17종</span> 사용 중)
+          </p>
+        </div>
+        <button
+          id="preview-select-all-btn"
+          type="button"
+          class="px-3 py-1.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 text-xs shrink-0 transition active:scale-95"
+        >
+          전체 선택
+        </button>
+      </div>
+
+      <!-- 17종 스티커 그리드 -->
+      <div id="preview-stickers-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-2.5 sm:gap-3 overflow-y-auto pr-1 py-2 my-1"></div>
+
+      <div class="mt-3 pt-2 border-t border-slate-100 flex justify-end">
+        <button
+          id="preview-stickers-close-btn"
+          type="button"
+          class="w-full py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-pink-400 hover:from-amber-500 hover:to-pink-500 text-white text-base sm:text-lg shadow-sm transition active:scale-95"
+        >
+          확인했어요!
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       모달 5: 완성한 스티커북 보관함 팝업
+  =========================================== -->
+  <div id="history-modal" class="fixed inset-0 bg-slate-900/45 backdrop-blur-xs z-40 hidden items-center justify-center p-4">
+    <div class="bg-[#fffdf7] rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl border-4 border-amber-200 flex flex-col max-h-[90vh]">
+      <!-- 상단 헤더 -->
+      <div class="flex items-center justify-between gap-2 mb-3">
+        <div class="flex items-center gap-2">
+          <button
+            id="history-back-btn"
+            type="button"
+            class="hidden px-3 py-1.5 rounded-xl bg-white hover:bg-amber-100 text-slate-700 border border-amber-200 text-xs sm:text-sm transition active:scale-95"
+          >
+            ← 목록으로
+          </button>
+          <h3 id="history-modal-title" class="text-xl sm:text-2xl text-slate-800">🏆 완성한 스티커북 보관함</h3>
+        </div>
+        <button
+          id="history-close-top-btn"
+          type="button"
+          class="w-8 h-8 rounded-full bg-white hover:bg-slate-100 text-slate-500 border border-slate-200 flex items-center justify-center text-sm transition"
+          aria-label="보관함 닫기"
+        >
+          ✕
+        </button>
+      </div>
+
+      <!-- 보관함 북 종류 전환 탭 (목록 보기일 때 표시) -->
+      <div id="history-tabs" class="grid grid-cols-2 gap-2 bg-amber-100/60 p-1 rounded-2xl mb-3">
+        <button
+          id="history-tab-daily"
+          type="button"
+          class="py-2 px-3 rounded-xl text-xs sm:text-sm transition bg-white text-amber-900 shadow-2xs"
+        >
+          🌟 칭찬 스티커북 (0권)
+        </button>
+        <button
+          id="history-tab-ar"
+          type="button"
+          class="py-2 px-3 rounded-xl text-xs sm:text-sm transition text-slate-600 hover:bg-white/60"
+        >
+          📚 AR 퀴즈북 (0권)
+        </button>
+      </div>
+
+      <!-- 1) 완성 권수 목록 영역 -->
+      <div id="history-list-view" class="overflow-y-auto pr-1 space-y-3 flex-1"></div>
+
+      <!-- 2) 선택한 권수 전체 스티커판 펼쳐보기 영역 -->
+      <div id="history-detail-view" class="hidden overflow-y-auto pr-1 flex-1 space-y-3">
+        <div class="bg-gradient-to-r from-amber-100/80 via-pink-50 to-purple-50 rounded-2xl p-3.5 border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span id="history-detail-badge" class="text-xs bg-amber-400 text-white px-2.5 py-0.5 rounded-full">제 1권 완성</span>
+              <span id="history-detail-date" class="text-xs sm:text-sm text-slate-500">2026년 11월 24일</span>
+            </div>
+            <p id="history-detail-gift" class="text-base sm:text-lg text-slate-800 mt-1">🎁 선물: 맛있는 아이스크림</p>
+          </div>
+        </div>
+
+        <div id="history-detail-grid" class="grid grid-cols-5 gap-2 sm:gap-2.5 bg-white/80 p-3 rounded-2xl border border-amber-200/80"></div>
+      </div>
+
+      <!-- 하단 닫기 버튼 -->
+      <div class="mt-4 pt-2 border-t border-amber-100">
+        <button
+          id="history-close-btn"
+          type="button"
+          class="w-full py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-500 hover:to-orange-500 text-white text-base sm:text-lg shadow-sm transition active:scale-95"
+        >
+          닫기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       모달 6: 목표 달성 특별 선물 교환권 화면
+  =========================================== -->
+  <div id="gift-voucher-modal" class="fixed inset-0 bg-slate-900/55 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="max-w-md w-full bg-gradient-to-b from-amber-50 via-white to-pink-50 rounded-3xl p-5 sm:p-7 border-4 border-amber-300 gift-voucher-card relative overflow-hidden text-center">
+      <!-- 상단 리본 & 왕관 장식 -->
+      <div class="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-gradient-to-r from-amber-400 to-pink-400 text-white text-xs sm:text-sm shadow-xs mb-3">
+        <span>👑</span>
+        <span id="voucher-book-badge">제 1권 완성 · 특별 선물 교환권</span>
+      </div>
+
+      <!-- 움직이는 큰 선물 상자 일러스트 -->
+      <div class="w-28 h-28 sm:w-32 sm:h-32 mx-auto my-1 flex items-center justify-center anim-sticker-bounce">
+        <svg viewBox="0 0 80 80" class="w-full h-full overflow-visible drop-shadow-md">
+          <g stroke-linecap="round" stroke-linejoin="round">
+            <rect x="16" y="34" width="48" height="34" rx="7" fill="#ff85a2" stroke="#b5335a" stroke-width="3.2"/>
+            <rect x="12" y="24" width="56" height="13" rx="5" fill="#ff5c8a" stroke="#b5335a" stroke-width="3.2"/>
+            <rect x="35" y="24" width="10" height="44" fill="#ffd166" stroke="#b5335a" stroke-width="2.6"/>
+            <path d="M40 24 C28 8, 15 15, 24 23 Z" fill="#ffd166" stroke="#b5335a" stroke-width="3"/>
+            <path d="M40 24 C52 8, 65 15, 56 23 Z" fill="#ffd166" stroke="#b5335a" stroke-width="3"/>
+            <circle cx="40" cy="23" r="4.8" fill="#ffe699" stroke="#b5335a" stroke-width="2.5"/>
+            <path d="M12 13 L13.8 17 L18 18.8 L13.8 20.6 L12 24.5 L10.2 20.6 L6 18.8 L10.2 17 Z" fill="#ffd43b" stroke="#b57606" stroke-width="1.4"/>
+            <path d="M68 12 L69.8 16 L74 17.8 L69.8 19.6 L68 23.5 L66.2 19.6 L62 17.8 L66.2 16 Z" fill="#ffd43b" stroke="#b57606" stroke-width="1.4"/>
+          </g>
+        </svg>
+      </div>
+
+      <h3 class="text-2xl sm:text-3xl text-slate-800 mt-1">🎁 Amy의 선물 교환권</h3>
+      <p id="voucher-subtitle" class="text-xs sm:text-sm text-slate-500 mt-1">
+        스스로 약속을 끝까지 지킨 멋진 Amy에게 이 선물을 드립니다!
+      </p>
+
+      <!-- 티켓 본문 박스 (쿠폰 절취선 스타일) -->
+      <div class="my-4 bg-white rounded-2xl p-4 sm:p-5 border-2 border-dashed border-amber-400 relative shadow-inner">
+        <div class="text-xs text-amber-700 mb-1">✨ 약속한 목표 선물 ✨</div>
+        <div id="voucher-gift-name" class="text-xl sm:text-2xl text-pink-600 break-keep leading-snug py-1">
+          맛있는 아이스크림 & 서점 나들이 🍦📚
+        </div>
+        <div class="mt-3 pt-2.5 border-t border-amber-100 flex items-center justify-between text-xs text-slate-500">
+          <span>받는 사람: <strong class="text-slate-700 font-normal">최고의 Amy 💖</strong></span>
+          <span id="voucher-date-label">2026년 11월 24일</span>
+        </div>
+      </div>
+
+      <!-- 액션 버튼 영역 -->
+      <div id="voucher-action-buttons" class="flex flex-col gap-2">
+        <button
+          id="voucher-start-new-btn"
+          type="button"
+          class="w-full py-3 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white text-base sm:text-lg shadow-md transition active:scale-95"
+        >
+          ✨ 선물 확인 완료! 새 스티커북 시작하기
+        </button>
+        <button
+          id="voucher-close-btn"
+          type="button"
+          class="w-full py-2.5 rounded-2xl bg-amber-100 hover:bg-amber-200 text-amber-900 text-sm sm:text-base transition"
+        >
+          완성된 스티커판 먼저 구경하기 🌟
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       모달 7: 부모님 확인 후 새 스티커북 시작하기 팝업
+  =========================================== -->
+  <div id="new-book-confirm-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl border-4 border-pink-200">
+      <div class="text-4xl mb-2">👨‍👩‍👧✨</div>
+      <h3 id="new-book-confirm-title" class="text-xl text-slate-800">새 스티커북을 시작할까요?</h3>
+      <p id="new-book-confirm-desc" class="text-sm text-slate-600 mt-2 leading-relaxed">
+        선물 교환을 부모님과 함께 확인하셨나요?<br />
+        완성한 스티커판은 <strong class="text-purple-700 font-normal">[보관함 🏆]</strong>에 안전하게 저장되어 있고, 1번 칸부터 새로 시작합니다!
+      </p>
+
+      <div class="flex gap-2 mt-5">
+        <button
+          id="new-book-cancel-btn"
+          type="button"
+          class="flex-1 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-base transition"
+        >
+          조금 더 볼래요
+        </button>
+        <button
+          id="new-book-confirm-btn"
+          type="button"
+          class="flex-1 py-2.5 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white text-base shadow-sm transition active:scale-95"
+        >
+          네, 새로 시작!
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       모달 8: 부모님용 전체 기록 초기화 팝업
+  =========================================== -->
+  <div id="reset-all-modal" class="fixed inset-0 bg-slate-900/55 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl border-4 border-rose-200">
+      <div class="text-4xl mb-2">🔄</div>
+      <h3 class="text-xl text-slate-800">처음 상태로 모두 초기화할까요?</h3>
+      <p class="text-sm text-slate-600 mt-2 leading-relaxed">
+        지금까지 모은 <strong class="text-rose-600 font-normal">칭찬 스티커, AR 퀴즈 스티커, 완성 보관함 기록</strong>이 모두 지워지고 처음 설치한 상태로 돌아갑니다.
+      </p>
+
+      <div class="mt-4 bg-rose-50/80 rounded-2xl p-3 border border-rose-200 text-left">
+        <label class="flex items-center gap-2.5 cursor-pointer select-none">
+          <input id="reset-confirm-checkbox" type="checkbox" class="w-5 h-5 accent-rose-500 rounded cursor-pointer" />
+          <span class="text-xs sm:text-sm text-rose-800">부모님 확인 완료: 모든 기록을 지울게요</span>
+        </label>
+      </div>
+
+      <div class="flex gap-2 mt-5">
+        <button
+          id="reset-all-cancel-btn"
+          type="button"
+          class="flex-1 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-base transition"
+        >
+          취소
+        </button>
+        <button
+          id="reset-all-confirm-btn"
+          type="button"
+          disabled
+          class="flex-1 py-2.5 rounded-2xl bg-slate-200 text-slate-400 text-base transition cursor-not-allowed"
+        >
+          전체 초기화
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 실행 취소 토스트 알림 -->
+  <div
+    id="toast"
+    class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-slate-800/95 text-white px-4 py-3 rounded-2xl shadow-lg flex items-center gap-3 z-50 transition-all duration-300 opacity-0 pointer-events-none translate-y-4"
+  >
+    <span id="toast-msg" class="text-sm sm:text-base">할 일을 지웠어요.</span>
+    <button
+      id="toast-undo-btn"
+      type="button"
+      class="px-3 py-1 rounded-xl bg-pink-400 hover:bg-pink-500 text-white text-sm transition"
+    >
+      실행 취소
+    </button>
+  </div>
+
+  <script>
+    // ==========================================
+    // 1. 상수 및 17가지 움직이는 귀여운 칭찬 이모티콘 컬렉션
+    // ==========================================
+    const STORAGE_KEY = 'amy_daily_promise_v2_3d';
+
+    const TITLE_HEART_ICON = '💖';
+
+    const STICKER_COLLECTION = [
+      { id: 0, label: '반짝 하트', praise: '사랑 가득! 참 잘했어요! 💖', anim: 'anim-sticker-pulse' },
+      { id: 1, label: '황금 왕별', praise: '반짝반짝 최고예요! ⭐', anim: 'anim-sticker-wiggle' },
+      { id: 2, label: '네잎클로버', praise: '행운 가득! 스스로 척척! 🍀', anim: 'anim-sticker-wiggle' },
+      { id: 3, label: '축하 폭죽', praise: '팡팡! 숙제 완료 축하해요! 🎉', anim: 'anim-sticker-bounce' },
+      { id: 4, label: '두둥실 풍선', praise: '기분 최고! 해냈어요! 🎈', anim: 'anim-sticker-float' },
+      { id: 5, label: '깜짝 선물', praise: '선물처럼 멋진 하루예요! 🎁', anim: 'anim-sticker-bounce' },
+      { id: 6, label: '왕관 곰돌이', praise: '오늘도 정말 멋져요! 🧸', anim: 'anim-sticker-wiggle' },
+      { id: 7, label: '깡총 아기토끼', praise: '깡총깡총! 약속 지켰어요! 🐰', anim: 'anim-sticker-bounce' },
+      { id: 8, label: '무지개 유니콘', praise: '반짝반짝 빛나는 Amy! 🦄', anim: 'anim-sticker-float' },
+      { id: 9, label: '리본 아기냥이', praise: '스스로 척척 해결했어요! 🐱', anim: 'anim-sticker-wiggle' },
+      { id: 10, label: '신난 강아지', praise: '칭찬 듬뿍! 최고예요! 🐶', anim: 'anim-sticker-bounce' },
+      { id: 11, label: '무지개 구름', praise: '무지개처럼 예쁜 마음! 🌈', anim: 'anim-sticker-float' },
+      { id: 12, label: '보석 왕관', praise: '오늘의 챔피언! 기특해요! 👑', anim: 'anim-sticker-pulse' },
+      { id: 13, label: '체리 컵케이크', praise: '달콤한 칭찬이 듬뿍! 🧁', anim: 'anim-sticker-wiggle' },
+      { id: 14, label: '황금 트로피', praise: '대단해요! 끝까지 해냈어요! 🏆', anim: 'anim-sticker-pulse' },
+      { id: 15, label: '달콤 딸기', praise: '상큼발랄! 오늘도 성공! 🍓', anim: 'anim-sticker-bounce' },
+      { id: 16, label: '우주 로켓', praise: '우주만큼 멋진 실력이에요! 🚀', anim: 'anim-sticker-float' }
+    ];
+
+    const PASTEL_COLORS = {
+      pink: {
+        card: 'bg-pink-50/95 border-pink-200',
+        ring: 'border-pink-500'
+      },
+      lavender: {
+        card: 'bg-purple-50/95 border-purple-200',
+        ring: 'border-purple-500'
+      },
+      peach: {
+        card: 'bg-orange-50/95 border-orange-200',
+        ring: 'border-orange-500'
+      },
+      mint: {
+        card: 'bg-emerald-50/95 border-emerald-200',
+        ring: 'border-emerald-500'
+      },
+      sky: {
+        card: 'bg-sky-50/95 border-sky-200',
+        ring: 'border-sky-500'
+      },
+      lemon: {
+        card: 'bg-amber-50/95 border-amber-200',
+        ring: 'border-amber-500'
+      }
+    };
+
+    // ==========================================
+    // 2. 앱 상태 관리
+    // ==========================================
+    function createDefaultState() {
+      return {
+        todos: [
+          { id: Date.now() + 1, text: '구몬 국어 1장 풀기', completed: false, color: 'peach' },
+          { id: Date.now() + 2, text: '영어책 읽고 AR 퀴즈풀기 (1권)', completed: false, color: 'sky' },
+          { id: Date.now() + 3, text: '스스로 가방 챙기고 정리하기', completed: false, color: 'mint' }
+        ],
+        stickers: [],
+        arStickers: [],
+        completedBooksHistory: [],
+        arCompletedBooksHistory: [],
+        enabledStickerIds: null,
+        targetGift: '맛있는 아이스크림 & 서점 나들이 🍦📚',
+        arTargetGift: '멋진 책 & 장난감 선물 🎁',
+        completedBooks: 0,
+        arCompletedBooks: 0,
+        selectedColor: 'lavender',
+        soundEnabled: true,
+        lastVisitDate: getTodayKey()
+      };
+    }
+
+    let state = {
+      todos: [],
+      stickers: [],
+      arStickers: [],
+      completedBooksHistory: [],
+      arCompletedBooksHistory: [],
+      enabledStickerIds: null,
+      targetGift: '맛있는 아이스크림 & 서점 나들이 🍦📚',
+      arTargetGift: '멋진 책 & 장난감 선물 🎁',
+      completedBooks: 0,
+      arCompletedBooks: 0,
+      selectedColor: 'lavender',
+      soundEnabled: true,
+      lastVisitDate: ''
+    };
+
+    let lastDeletedTodo = null;
+    let toastTimer = null;
+    let pendingDeleteStickerIndex = null;
+    let pendingDeleteBookType = 'daily';
+    let editingGiftType = 'daily';
+    let lastClaimedType = 'daily';
+    let historyModalBookType = 'daily';
+    let voucherBookType = 'daily';
+    let pendingNewBookType = 'daily';
+    let draggedIndex = null;
+
+    // ==========================================
+    // 3. 날짜 및 마스코트 유틸리티
+    // ==========================================
+    function getTodayKey() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function getFullKoreanDate() {
+      const now = new Date();
+      const days = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+      return `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일 ${days[now.getDay()]}`;
+    }
+
+    function getShortDateLabel() {
+      const now = new Date();
+      return `${now.getMonth() + 1}/${now.getDate()}`;
+    }
+
+    function getDailyMascot() {
+      return TITLE_HEART_ICON;
+    }
+
+    // ==========================================
+    // 4. Web Audio API 경쾌한 효과음
+    // ==========================================
+    let audioCtx = null;
+
+    function playSound(type) {
+      if (!state.soundEnabled) return;
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === 'add') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(523.25, now);
+          osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.12);
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+          osc.start(now);
+          osc.stop(now + 0.16);
+        } else if (type === 'check') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(587.33, now);
+          osc.frequency.setValueAtTime(880, now + 0.08);
+          gain.gain.setValueAtTime(0.18, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+          osc.start(now);
+          osc.stop(now + 0.25);
+        } else if (type === 'fanfare') {
+          const notes = [523.25, 659.25, 783.99, 1046.5];
+          notes.forEach((freq, idx) => {
+            const o = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            o.type = 'triangle';
+            o.connect(g);
+            g.connect(audioCtx.destination);
+            const t = now + idx * 0.11;
+            o.frequency.setValueAtTime(freq, t);
+            g.gain.setValueAtTime(0.2, t);
+            g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+            o.start(t);
+            o.stop(t + 0.35);
+          });
+        }
+      } catch (e) {
+        // 오디오 차단 환경 무시
+      }
+    }
+
+    // ==========================================
+    // 5. 축하 꽃가루(Confetti) 애니메이션
+    // ==========================================
+    const confettiCanvas = document.getElementById('confetti-canvas');
+    const confettiCtx = confettiCanvas.getContext('2d');
+    let confettiParticles = [];
+    let confettiAnimId = null;
+
+    function resizeConfettiCanvas() {
+      confettiCanvas.width = window.innerWidth;
+      confettiCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeConfettiCanvas);
+    resizeConfettiCanvas();
+
+    function launchConfetti() {
+      const colors = ['#ff8aae', '#ffd166', '#8ecae6', '#a8e6cf', '#cdb4db', '#ffafcc'];
+      confettiParticles = [];
+      for (let i = 0; i < 85; i++) {
+        confettiParticles.push({
+          x: confettiCanvas.width * 0.5 + (Math.random() - 0.5) * 140,
+          y: confettiCanvas.height * 0.45,
+          vx: (Math.random() - 0.5) * 14,
+          vy: -Math.random() * 13 - 4,
+          size: Math.random() * 8 + 5,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * 360,
+          vRot: (Math.random() - 0.5) * 12,
+          gravity: 0.35
+        });
+      }
+      if (confettiAnimId) cancelAnimationFrame(confettiAnimId);
+      animateConfetti();
+    }
+
+    function animateConfetti() {
+      confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      let activeCount = 0;
+
+      confettiParticles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += p.gravity;
+        p.rotation += p.vRot;
+
+        if (p.y < confettiCanvas.height + 30) {
+          activeCount++;
+          confettiCtx.save();
+          confettiCtx.translate(p.x, p.y);
+          confettiCtx.rotate((p.rotation * Math.PI) / 180);
+          confettiCtx.fillStyle = p.color;
+          confettiCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.65);
+          confettiCtx.restore();
+        }
+      });
+
+      if (activeCount > 0) {
+        confettiAnimId = requestAnimationFrame(animateConfetti);
+      } else {
+        confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      }
+    }
+
+    // ==========================================
+    // 6. 17가지 움직이는 귀여운 칭찬 이모티콘 렌더링
+    // ==========================================
+    function resolveStickerIndex(sticker) {
+      if (sticker && typeof sticker.stickerId === 'number' && sticker.stickerId >= 0 && sticker.stickerId < STICKER_COLLECTION.length) {
+        return sticker.stickerId;
+      }
+      if (sticker && typeof sticker.stickerId === 'string') {
+        const foundIdx = STICKER_COLLECTION.findIndex(item => item.label === sticker.stickerId);
+        if (foundIdx !== -1) return foundIdx;
+      }
+      const seed = (sticker && (sticker.dateKey || sticker.dateLabel)) ? `${sticker.dateKey || ''}${sticker.dateLabel || ''}` : '0';
+      let hash = 0;
+      for (let i = 0; i < seed.length; i++) {
+        hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+      }
+      return hash % STICKER_COLLECTION.length;
+    }
+
+    function renderStickerImage(sticker) {
+      const idx = resolveStickerIndex(sticker);
+      const item = STICKER_COLLECTION[idx] || STICKER_COLLECTION[0];
+      const animClass = item.anim || 'anim-sticker-float';
+
+      const wrapIcon = innerSvg => `
+        <div class="w-[82%] h-[82%] flex items-center justify-center ${animClass} cute-sticker-icon">
+          <svg viewBox="0 0 80 80" class="w-full h-full select-none pointer-events-none overflow-visible">
+            <g stroke-linecap="round" stroke-linejoin="round">
+              ${innerSvg}
+            </g>
+          </svg>
+        </div>
+      `;
+
+      switch (idx) {
+        case 0: // 1. 반짝 하트
+          return wrapIcon(`
+            <path d="M40 67 C40 67, 13 49, 13 30 C13 19, 22 13, 31 16 C35 17.5, 38.5 21, 40 24.5 C41.5 21, 45 17.5, 49 16 C58 13, 67 19, 67 30 C67 49, 40 67, 40 67 Z" fill="#ff7aa2" stroke="#b52b58" stroke-width="3.5"/>
+            <ellipse cx="26" cy="26" rx="5.5" ry="3.2" transform="rotate(-32 26 26)" fill="#ffffff" opacity="0.8"/>
+            <path d="M60 15 C60 15, 53 10.5, 53 6.5 C53 4, 55.2 2.5, 57.5 3.3 C58.7 3.7, 59.6 4.7, 60 5.6 C60.4 4.7, 61.3 3.7, 62.5 3.3 C64.8 2.5, 67 4, 67 6.5 C67 10.5, 60 15, 60 15 Z" fill="#ffb3c6" stroke="#b52b58" stroke-width="2"/>
+            <path d="M16 55 L17.5 58.5 L21 60 L17.5 61.5 L16 65 L14.5 61.5 L11 60 L14.5 58.5 Z" fill="#ffe066" stroke="#c98208" stroke-width="1.5"/>
+            <circle cx="64" cy="54" r="2.8" fill="#ffe066"/>
+          `);
+
+        case 1: // 2. 황금 왕별
+          return wrapIcon(`
+            <polygon points="40,9 49,27 69,30 54.5,44 58,64 40,54.5 22,64 25.5,44 11,30 31,27" fill="#ffd43b" stroke="#9e6208" stroke-width="3.5"/>
+            <ellipse cx="32" cy="27" rx="5" ry="2.6" transform="rotate(-24 32 27)" fill="#ffffff" opacity="0.8"/>
+            <circle cx="34" cy="39" r="2.6" fill="#593506"/>
+            <circle cx="46" cy="39" r="2.6" fill="#593506"/>
+            <circle cx="29" cy="43" r="3" fill="#ff9ebb" opacity="0.85"/>
+            <circle cx="51" cy="43" r="3" fill="#ff9ebb" opacity="0.85"/>
+            <path d="M36 44 Q40 48 44 44" fill="none" stroke="#593506" stroke-width="2.4"/>
+            <path d="M15 15 L16.5 18.5 L20 20 L16.5 21.5 L15 25 L13.5 21.5 L10 20 L13.5 18.5 Z" fill="#fff394" stroke="#c98208" stroke-width="1.5"/>
+          `);
+
+        case 2: // 3. 네잎클로버
+          return wrapIcon(`
+            <path d="M40 42 Q43 58 34 69" fill="none" stroke="#379e43" stroke-width="4.2"/>
+            <g transform="translate(40,40)">
+              <g transform="rotate(-45)">
+                <path d="M0 0 C-10 -6, -15 -19, -7 -24 C-2 -27, 0 -22, 0 -19 C0 -22, 2 -27, 7 -24 C15 -19, 10 -6, 0 0 Z" fill="#7ae582" stroke="#246e31" stroke-width="2.8"/>
+              </g>
+              <g transform="rotate(45)">
+                <path d="M0 0 C-10 -6, -15 -19, -7 -24 C-2 -27, 0 -22, 0 -19 C0 -22, 2 -27, 7 -24 C15 -19, 10 -6, 0 0 Z" fill="#63d471" stroke="#246e31" stroke-width="2.8"/>
+              </g>
+              <g transform="rotate(135)">
+                <path d="M0 0 C-10 -6, -15 -19, -7 -24 C-2 -27, 0 -22, 0 -19 C0 -22, 2 -27, 7 -24 C15 -19, 10 -6, 0 0 Z" fill="#7ae582" stroke="#246e31" stroke-width="2.8"/>
+              </g>
+              <g transform="rotate(-135)">
+                <path d="M0 0 C-10 -6, -15 -19, -7 -24 C-2 -27, 0 -22, 0 -19 C0 -22, 2 -27, 7 -24 C15 -19, 10 -6, 0 0 Z" fill="#63d471" stroke="#246e31" stroke-width="2.8"/>
+              </g>
+              <circle cx="0" cy="0" r="3.4" fill="#d8f5a2" stroke="#246e31" stroke-width="2"/>
+            </g>
+            <path d="M62 14 L63.5 17.5 L67 19 L63.5 20.5 L62 24 L60.5 20.5 L57 19 L60.5 17.5 Z" fill="#ffe066" stroke="#c98208" stroke-width="1.4"/>
+          `);
+
+        case 3: // 4. 축하 폭죽
+          return wrapIcon(`
+            <polygon points="16,64 29,31 49,51" fill="#ffd166" stroke="#a65b08" stroke-width="3.2"/>
+            <line x1="23" y1="47" x2="38" y2="56" stroke="#ff6b8b" stroke-width="3.5"/>
+            <line x1="26" y1="39" x2="44" y2="53" stroke="#74c0fc" stroke-width="3.5"/>
+            <path d="M36 33 Q44 18 58 16" fill="none" stroke="#ff6b8b" stroke-width="3.2"/>
+            <path d="M43 39 Q55 31 66 34" fill="none" stroke="#4dabf7" stroke-width="3.2"/>
+            <path d="M32 27 Q31 15 41 11" fill="none" stroke="#51cf66" stroke-width="3.2"/>
+            <circle cx="61" cy="15" r="3.5" fill="#ff6b8b"/>
+            <circle cx="67" cy="26" r="3" fill="#ffd43b"/>
+            <circle cx="48" cy="11" r="3" fill="#9775fa"/>
+            <polygon points="56,43 62,41 60,47" fill="#51cf66"/>
+          `);
+
+        case 4: // 5. 두둥실 풍선
+          return wrapIcon(`
+            <path d="M40 53 Q36 62 43 69" fill="none" stroke="#868e96" stroke-width="2.6"/>
+            <ellipse cx="40" cy="31" rx="20" ry="22" fill="#ff7aa2" stroke="#b52b58" stroke-width="3.2"/>
+            <polygon points="36,52 44,52 40,56" fill="#ff7aa2" stroke="#b52b58" stroke-width="2.4"/>
+            <ellipse cx="32" cy="23" rx="4.5" ry="7.5" transform="rotate(-24 32 23)" fill="#ffffff" opacity="0.72"/>
+            <circle cx="62" cy="21" r="2.8" fill="#ffd43b"/>
+            <circle cx="17" cy="26" r="2.5" fill="#74c0fc"/>
+          `);
+
+        case 5: // 6. 깜짝 선물
+          return wrapIcon(`
+            <rect x="18" y="34" width="44" height="32" rx="6" fill="#ff85a2" stroke="#b5335a" stroke-width="3.2"/>
+            <rect x="14" y="25" width="52" height="12" rx="4.5" fill="#ff5c8a" stroke="#b5335a" stroke-width="3.2"/>
+            <rect x="35" y="25" width="10" height="41" fill="#ffd166" stroke="#b5335a" stroke-width="2.6"/>
+            <path d="M40 25 C29 10, 17 16, 25 24 Z" fill="#ffd166" stroke="#b5335a" stroke-width="3"/>
+            <path d="M40 25 C51 10, 63 16, 55 24 Z" fill="#ffd166" stroke="#b5335a" stroke-width="3"/>
+            <circle cx="40" cy="24" r="4.5" fill="#ffe699" stroke="#b5335a" stroke-width="2.5"/>
+          `);
+
+        case 6: // 7. 왕관 곰돌이
+          return wrapIcon(`
+            <circle cx="21" cy="26" r="9" fill="#d99b66" stroke="#6e421e" stroke-width="3"/>
+            <circle cx="21" cy="26" r="4.5" fill="#f7b7b7"/>
+            <circle cx="59" cy="26" r="9" fill="#d99b66" stroke="#6e421e" stroke-width="3"/>
+            <circle cx="59" cy="26" r="4.5" fill="#f7b7b7"/>
+            <ellipse cx="40" cy="44" rx="24" ry="21" fill="#e0a672" stroke="#6e421e" stroke-width="3.2"/>
+            <ellipse cx="40" cy="50" rx="10" ry="7.5" fill="#fff4e6"/>
+            <circle cx="30" cy="41" r="2.8" fill="#3d2214"/>
+            <circle cx="50" cy="41" r="2.8" fill="#3d2214"/>
+            <circle cx="24" cy="47" r="3.5" fill="#ff9ebb" opacity="0.85"/>
+            <circle cx="56" cy="47" r="3.5" fill="#ff9ebb" opacity="0.85"/>
+            <ellipse cx="40" cy="47" rx="3.2" ry="2.2" fill="#3d2214"/>
+            <path d="M36 51 Q40 55 44 51" fill="none" stroke="#3d2214" stroke-width="2.2"/>
+            <path d="M30 23 L32 13 L37 18 L40 11 L43 18 L48 13 L50 23 Z" fill="#ffd43b" stroke="#8f5808" stroke-width="2.2"/>
+          `);
+
+        case 7: // 8. 깡총 아기토끼
+          return wrapIcon(`
+            <ellipse cx="30" cy="22" rx="6.5" ry="15" transform="rotate(-10 30 22)" fill="#ffffff" stroke="#745c8a" stroke-width="3"/>
+            <ellipse cx="30" cy="23" rx="3.2" ry="10" transform="rotate(-10 30 23)" fill="#ffb5c8"/>
+            <ellipse cx="50" cy="22" rx="6.5" ry="15" transform="rotate(10 50 22)" fill="#ffffff" stroke="#745c8a" stroke-width="3"/>
+            <ellipse cx="50" cy="23" rx="3.2" ry="10" transform="rotate(10 50 23)" fill="#ffb5c8"/>
+            <ellipse cx="40" cy="46" rx="23" ry="19" fill="#ffffff" stroke="#745c8a" stroke-width="3.2"/>
+            <circle cx="31" cy="44" r="2.8" fill="#3b2c4a"/>
+            <circle cx="49" cy="44" r="2.8" fill="#3b2c4a"/>
+            <circle cx="24" cy="49" r="3.8" fill="#ff9ebb" opacity="0.85"/>
+            <circle cx="56" cy="49" r="3.8" fill="#ff9ebb" opacity="0.85"/>
+            <ellipse cx="40" cy="48" rx="2.5" ry="1.8" fill="#ff7597"/>
+            <path d="M36 51 Q40 55 44 51" fill="none" stroke="#3b2c4a" stroke-width="2.2"/>
+          `);
+
+        case 8: // 9. 무지개 유니콘
+          return wrapIcon(`
+            <polygon points="40,8 34,27 46,27" fill="#ffd43b" stroke="#9e6208" stroke-width="2.6"/>
+            <polygon points="24,28 20,16 32,24" fill="#ffffff" stroke="#6f5294" stroke-width="2.6"/>
+            <polygon points="56,28 60,16 48,24" fill="#ffffff" stroke="#6f5294" stroke-width="2.6"/>
+            <circle cx="30" cy="27" r="7" fill="#ff9ebb" stroke="#6f5294" stroke-width="2.2"/>
+            <circle cx="40" cy="25" r="7.5" fill="#9be7ff" stroke="#6f5294" stroke-width="2.2"/>
+            <circle cx="50" cy="27" r="7" fill="#ffe58f" stroke="#6f5294" stroke-width="2.2"/>
+            <ellipse cx="40" cy="47" rx="22" ry="19" fill="#ffffff" stroke="#6f5294" stroke-width="3.2"/>
+            <ellipse cx="40" cy="54" rx="13" ry="8" fill="#ffe6f0"/>
+            <circle cx="31" cy="44" r="2.8" fill="#3f2c59"/>
+            <circle cx="49" cy="44" r="2.8" fill="#3f2c59"/>
+            <path d="M36 54 Q40 58 44 54" fill="none" stroke="#3f2c59" stroke-width="2.2"/>
+          `);
+
+        case 9: // 10. 리본 아기냥이
+          return wrapIcon(`
+            <polygon points="20,33 17,16 33,25" fill="#ffe3b3" stroke="#755233" stroke-width="3"/>
+            <polygon points="60,33 63,16 47,25" fill="#ffe3b3" stroke="#755233" stroke-width="3"/>
+            <ellipse cx="40" cy="45" rx="24" ry="20" fill="#ffebd2" stroke="#755233" stroke-width="3.2"/>
+            <circle cx="30" cy="43" r="2.8" fill="#422a16"/>
+            <circle cx="50" cy="43" r="2.8" fill="#422a16"/>
+            <circle cx="24" cy="49" r="3.6" fill="#ff9ebb" opacity="0.85"/>
+            <circle cx="56" cy="49" r="3.6" fill="#ff9ebb" opacity="0.85"/>
+            <polygon points="38,47 42,47 40,50" fill="#ff7597"/>
+            <path d="M35 51 Q38 54 40 50 Q42 54 45 51" fill="none" stroke="#422a16" stroke-width="2"/>
+            <g transform="translate(53,22) rotate(20)">
+              <path d="M0 0 L-8 -5 C-10 -2, -10 2, -8 5 Z" fill="#ff7aa2" stroke="#9e244c" stroke-width="2"/>
+              <path d="M0 0 L8 -5 C10 -2, 10 2, 8 5 Z" fill="#ff7aa2" stroke="#9e244c" stroke-width="2"/>
+              <circle cx="0" cy="0" r="2.8" fill="#ffd166" stroke="#9e244c" stroke-width="1.6"/>
+            </g>
+          `);
+
+        case 10: // 11. 신난 강아지
+          return wrapIcon(`
+            <ellipse cx="18" cy="42" rx="7" ry="13" transform="rotate(16 18 42)" fill="#c97e38" stroke="#663910" stroke-width="3"/>
+            <ellipse cx="62" cy="42" rx="7" ry="13" transform="rotate(-16 62 42)" fill="#c97e38" stroke="#663910" stroke-width="3"/>
+            <ellipse cx="40" cy="42" rx="23" ry="20" fill="#f5b867" stroke="#663910" stroke-width="3.2"/>
+            <ellipse cx="40" cy="49" rx="13" ry="10" fill="#fffaf0"/>
+            <circle cx="30" cy="39" r="2.8" fill="#3b2007"/>
+            <circle cx="50" cy="39" r="2.8" fill="#3b2007"/>
+            <ellipse cx="40" cy="45" rx="3" ry="2.2" fill="#3b2007"/>
+            <path d="M35 49 Q40 54 45 49" fill="none" stroke="#3b2007" stroke-width="2.2"/>
+            <path d="M38 51 Q40 57 42 51" fill="#ff7597"/>
+          `);
+
+        case 11: // 12. 무지개 구름
+          return wrapIcon(`
+            <path d="M16 48 A24 24 0 0 1 64 48" fill="none" stroke="#ff6b8b" stroke-width="6.5"/>
+            <path d="M21 48 A19 19 0 0 1 59 48" fill="none" stroke="#ffd43b" stroke-width="5.5"/>
+            <path d="M26 48 A14 14 0 0 1 54 48" fill="none" stroke="#69db7c" stroke-width="5"/>
+            <path d="M31 48 A9 9 0 0 1 49 48" fill="none" stroke="#74c0fc" stroke-width="4.5"/>
+            <path d="M14 58 C9 58, 7 51, 12 48 C13 42, 21 41, 25 45 C29 42, 36 45, 34 51 C38 53, 36 58, 31 58 Z" fill="#ffffff" stroke="#7d9bc2" stroke-width="2.5"/>
+            <path d="M49 58 C44 58, 42 51, 47 48 C48 42, 56 41, 60 45 C64 42, 71 45, 69 51 C73 53, 71 58, 66 58 Z" fill="#ffffff" stroke="#7d9bc2" stroke-width="2.5"/>
+          `);
+
+        case 12: // 13. 보석 왕관
+          return wrapIcon(`
+            <path d="M15 56 L12 26 L28 38 L40 20 L52 38 L68 26 L65 56 Z" fill="#ffd43b" stroke="#995c06" stroke-width="3.4"/>
+            <rect x="15" y="51" width="50" height="8" rx="3" fill="#fab005" stroke="#995c06" stroke-width="2.8"/>
+            <circle cx="40" cy="41" r="4.5" fill="#ff5c8a" stroke="#995c06" stroke-width="2"/>
+            <circle cx="24" cy="44" r="3" fill="#4dabf7"/>
+            <circle cx="56" cy="44" r="3" fill="#51cf66"/>
+            <circle cx="12" cy="23" r="3.5" fill="#ffe066" stroke="#995c06" stroke-width="2"/>
+            <circle cx="40" cy="17" r="4" fill="#ffe066" stroke="#995c06" stroke-width="2"/>
+            <circle cx="68" cy="23" r="3.5" fill="#ffe066" stroke="#995c06" stroke-width="2"/>
+          `);
+
+        case 13: // 14. 체리 컵케이크
+          return wrapIcon(`
+            <polygon points="21,44 59,44 53,66 27,66" fill="#74c0fc" stroke="#2c5c8f" stroke-width="3.2"/>
+            <line x1="33" y1="44" x2="35" y2="66" stroke="#2c5c8f" stroke-width="2.2"/>
+            <line x1="47" y1="44" x2="45" y2="66" stroke="#2c5c8f" stroke-width="2.2"/>
+            <path d="M17 44 C14 35, 23 29, 31 31 C31 22, 49 22, 49 31 C57 29, 66 35, 63 44 Z" fill="#fff0f6" stroke="#9e476d" stroke-width="3"/>
+            <line x1="28" y1="37" x2="32" y2="35" stroke="#ff6b8b" stroke-width="2.6"/>
+            <line x1="41" y1="34" x2="45" y2="36" stroke="#ffd43b" stroke-width="2.6"/>
+            <line x1="51" y1="38" x2="54" y2="36" stroke="#51cf66" stroke-width="2.6"/>
+            <path d="M40 19 Q44 11 51 10" fill="none" stroke="#3b7a2a" stroke-width="2.6"/>
+            <circle cx="40" cy="22" r="6.5" fill="#ff4d6d" stroke="#800f2f" stroke-width="2.6"/>
+          `);
+
+        case 14: // 15. 황금 트로피
+          return wrapIcon(`
+            <path d="M23 23 C11 23, 11 40, 25 42" fill="none" stroke="#e08e0b" stroke-width="4.5"/>
+            <path d="M57 23 C69 23, 69 40, 55 42" fill="none" stroke="#e08e0b" stroke-width="4.5"/>
+            <path d="M22 17 L58 17 L54 41 C53 51, 47 55, 40 55 C33 55, 27 51, 26 41 Z" fill="#ffd43b" stroke="#8f5406" stroke-width="3.2"/>
+            <rect x="36" y="54" width="8" height="9" fill="#ffd43b" stroke="#8f5406" stroke-width="2.6"/>
+            <rect x="26" y="62" width="28" height="7" rx="3" fill="#9c5527" stroke="#572b0e" stroke-width="2.6"/>
+            <polygon points="40,24 43,31 50,32 45,37 46,44 40,40 34,44 35,37 30,32 37,31" fill="#ffffff" stroke="#a66208" stroke-width="1.8"/>
+          `);
+
+        case 15: // 16. 달콤 딸기
+          return wrapIcon(`
+            <path d="M40 67 C24 67, 17 48, 20 34 C22 24, 31 21, 40 21 C49 21, 58 24, 60 34 C63 48, 56 67, 40 67 Z" fill="#ff5c7c" stroke="#9e1936" stroke-width="3.4"/>
+            <path d="M24 25 L32 20 L40 27 L48 20 L56 25 L49 16 L40 19 L31 16 Z" fill="#51cf66" stroke="#246e31" stroke-width="2.5"/>
+            <path d="M40 18 L40 11" stroke="#246e31" stroke-width="3"/>
+            <circle cx="31" cy="36" r="1.8" fill="#fff3bf"/>
+            <circle cx="40" cy="39" r="1.8" fill="#fff3bf"/>
+            <circle cx="49" cy="36" r="1.8" fill="#fff3bf"/>
+            <circle cx="34" cy="48" r="1.8" fill="#fff3bf"/>
+            <circle cx="46" cy="48" r="1.8" fill="#fff3bf"/>
+            <circle cx="40" cy="57" r="1.8" fill="#fff3bf"/>
+          `);
+
+        case 16: // 17. 우주 로켓
+        default:
+          return wrapIcon(`
+            <path d="M33 56 Q40 70 47 56 Z" fill="#ff922b" stroke="#a63f06" stroke-width="2.2"/>
+            <path d="M36 56 Q40 65 44 56 Z" fill="#ffe066"/>
+            <polygon points="27,44 16,55 28,54" fill="#ff5c7c" stroke="#8a1932" stroke-width="2.6"/>
+            <polygon points="53,44 64,55 52,54" fill="#ff5c7c" stroke="#8a1932" stroke-width="2.6"/>
+            <path d="M40 12 C51 22, 54 39, 52 55 L28 55 C26 39, 29 22, 40 12 Z" fill="#ffffff" stroke="#3b4d75" stroke-width="3.2"/>
+            <path d="M40 12 C46 18, 49 23, 50 28 L30 28 C31 23, 34 18, 40 12 Z" fill="#ff5c7c" stroke="#8a1932" stroke-width="2.6"/>
+            <circle cx="40" cy="39" r="7.5" fill="#74c0fc" stroke="#3b4d75" stroke-width="2.8"/>
+            <circle cx="38" cy="37" r="2" fill="#ffffff" opacity="0.85"/>
+          `);
+      }
+    }
+
+    // ==========================================
+    // 7. 로컬 스토리지 저장 및 불러오기
+    // ==========================================
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        // 스토리지 예외 무시
+      }
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          state = {
+            ...state,
+            ...parsed
+          };
+        }
+      } catch (e) {
+        // 파싱 오류 시 기본값 유지
+      }
+
+      if (!Array.isArray(state.stickers)) state.stickers = [];
+      if (!Array.isArray(state.arStickers)) state.arStickers = [];
+      if (!Array.isArray(state.completedBooksHistory)) state.completedBooksHistory = [];
+      if (!Array.isArray(state.arCompletedBooksHistory)) state.arCompletedBooksHistory = [];
+
+      const todayKey = getTodayKey();
+      if (state.lastVisitDate && state.lastVisitDate !== todayKey) {
+        state.todos = state.todos.map(t => ({ ...t, completed: false }));
+      }
+      state.lastVisitDate = todayKey;
+
+      if (!state.todos || state.todos.length === 0) {
+        state.todos = [
+          { id: Date.now() + 1, text: '구몬 국어 1장 풀기', completed: false, color: 'peach' },
+          { id: Date.now() + 2, text: '영어책 읽고 AR 퀴즈풀기 (1권)', completed: false, color: 'sky' },
+          { id: Date.now() + 3, text: '스스로 가방 챙기고 정리하기', completed: false, color: 'mint' }
+        ];
+      }
+      saveState();
+    }
+
+    // ==========================================
+    // 8. UI 렌더링 (할 일 목록, 진행률, 스티커북, AR 퀴즈북)
+    // ==========================================
+    function renderAll() {
+      renderHeader();
+      updateColorPickerUI();
+      renderTodos();
+      renderStickerBook();
+      renderArBook();
+    }
+
+    function renderHeader() {
+      document.getElementById('today-date-label').textContent = getFullKoreanDate();
+      document.getElementById('daily-mascot').textContent = getDailyMascot();
+      document.getElementById('nav-sticker-count').textContent = `${state.stickers.length}/30`;
+      document.getElementById('nav-ar-count').textContent = `${state.arStickers.length}/50`;
+
+      const soundIcon = document.getElementById('sound-icon');
+      const soundText = document.getElementById('sound-text');
+      if (state.soundEnabled) {
+        soundIcon.textContent = '🔊';
+        soundText.textContent = '소리 켜짐';
+      } else {
+        soundIcon.textContent = '🔇';
+        soundText.textContent = '소리 꺼짐';
+      }
+    }
+
+    function renderTodos() {
+      const listEl = document.getElementById('todo-list');
+      const emptyEl = document.getElementById('empty-state');
+      listEl.innerHTML = '';
+
+      if (state.todos.length === 0) {
+        emptyEl.classList.remove('hidden');
+      } else {
+        emptyEl.classList.add('hidden');
+      }
+
+      state.todos.forEach((todo, index) => {
+        const palette = PASTEL_COLORS[todo.color] || PASTEL_COLORS.lavender;
+        const li = document.createElement('li');
+        li.className = `todo-item rounded-2xl p-3.5 sm:p-4 border-2 shadow-2xs transition-all flex items-center gap-3 ${palette.card} ${todo.completed ? 'opacity-70' : ''}`;
+        li.draggable = true;
+        li.dataset.index = index;
+
+        li.addEventListener('dragstart', () => {
+          draggedIndex = index;
+          li.classList.add('dragging');
+        });
+        li.addEventListener('dragend', () => {
+          li.classList.remove('dragging');
+          document.querySelectorAll('.todo-item').forEach(el => el.classList.remove('drag-over'));
+        });
+        li.addEventListener('dragover', e => {
+          e.preventDefault();
+          li.classList.add('drag-over');
+        });
+        li.addEventListener('dragleave', () => {
+          li.classList.remove('drag-over');
+        });
+        li.addEventListener('drop', e => {
+          e.preventDefault();
+          li.classList.remove('drag-over');
+          if (draggedIndex !== null && draggedIndex !== index) {
+            moveTodo(draggedIndex, index);
+          }
+        });
+
+        const checkBtn = document.createElement('button');
+        checkBtn.type = 'button';
+        checkBtn.className = `w-10 h-10 rounded-2xl flex items-center justify-center text-xl shrink-0 transition active:scale-90 border-2 ${
+          todo.completed
+            ? 'bg-amber-300 border-amber-400 text-white shadow-xs'
+            : 'bg-white border-slate-200 text-slate-300 hover:border-amber-300'
+        }`;
+        checkBtn.innerHTML = todo.completed ? '⭐' : '☆';
+        checkBtn.setAttribute('aria-label', '완료 체크');
+        checkBtn.addEventListener('click', () => toggleTodo(todo.id));
+
+        const textBtn = document.createElement('button');
+        textBtn.type = 'button';
+        textBtn.className = `flex-1 text-left text-base sm:text-lg leading-snug break-keep transition ${
+          todo.completed ? 'line-through text-slate-400' : 'text-slate-700'
+        }`;
+        textBtn.textContent = todo.text;
+        textBtn.addEventListener('click', () => toggleTodo(todo.id));
+
+        const controls = document.createElement('div');
+        controls.className = 'flex items-center gap-1 shrink-0';
+
+        const upBtn = document.createElement('button');
+        upBtn.type = 'button';
+        upBtn.className = `w-8 h-8 rounded-xl bg-white/80 hover:bg-white text-slate-500 border border-slate-200/80 text-sm transition ${
+          index === 0 ? 'opacity-30 cursor-not-allowed' : 'active:scale-90'
+        }`;
+        upBtn.textContent = '↑';
+        upBtn.disabled = index === 0;
+        upBtn.title = '위로 이동';
+        upBtn.addEventListener('click', () => moveTodo(index, index - 1));
+
+        const downBtn = document.createElement('button');
+        downBtn.type = 'button';
+        downBtn.className = `w-8 h-8 rounded-xl bg-white/80 hover:bg-white text-slate-500 border border-slate-200/80 text-sm transition ${
+          index === state.todos.length - 1 ? 'opacity-30 cursor-not-allowed' : 'active:scale-90'
+        }`;
+        downBtn.textContent = '↓';
+        downBtn.disabled = index === state.todos.length - 1;
+        downBtn.title = '아래로 이동';
+        downBtn.addEventListener('click', () => moveTodo(index, index + 1));
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.type = 'button';
+        deleteBtn.className = 'w-8 h-8 rounded-xl bg-white/80 hover:bg-rose-100 text-rose-400 hover:text-rose-600 border border-slate-200/80 text-sm transition active:scale-90 ml-0.5';
+        deleteBtn.textContent = '🗑️';
+        deleteBtn.title = '삭제';
+        deleteBtn.addEventListener('click', () => deleteTodo(todo.id));
+
+        controls.append(upBtn, downBtn, deleteBtn);
+        li.append(checkBtn, textBtn, controls);
+        listEl.appendChild(li);
+      });
+
+      updateProgressAndClaimButton();
+    }
+
+    function updateProgressAndClaimButton() {
+      const total = state.todos.length;
+      const done = state.todos.filter(t => t.completed).length;
+      const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+
+      document.getElementById('progress-count').textContent = `${done} / ${total} 완료`;
+      document.getElementById('progress-bar').style.width = `${pct}%`;
+
+      const cheerEl = document.getElementById('cheer-message');
+      const claimBtn = document.getElementById('claim-sticker-btn');
+      const claimBtnText = document.getElementById('claim-btn-text');
+      const todayKey = getTodayKey();
+      const alreadyClaimedToday = state.stickers.some(s => s.dateKey === todayKey);
+
+      if (total === 0) {
+        cheerEl.textContent = '오늘의 약속을 추가해 볼까요? ✨';
+        claimBtn.disabled = true;
+        claimBtn.className = 'px-4 py-3 rounded-2xl text-base sm:text-lg transition flex items-center justify-center gap-1.5 shrink-0 bg-slate-100 text-slate-400 border-2 border-slate-200 cursor-not-allowed';
+        claimBtnText.textContent = '스티커 받기!';
+      } else if (done < total) {
+        const remain = total - done;
+        cheerEl.textContent = `조금만 더 힘내요! ${remain}개 남았어요 ✨`;
+        claimBtn.disabled = true;
+        claimBtn.className = 'px-4 py-3 rounded-2xl text-base sm:text-lg transition flex items-center justify-center gap-1.5 shrink-0 bg-slate-100 text-slate-400 border-2 border-slate-200 cursor-not-allowed';
+        claimBtnText.textContent = '스티커 받기!';
+      } else {
+        if (alreadyClaimedToday) {
+          cheerEl.textContent = '와아! 오늘의 칭찬 스티커를 이미 받았어요! 🎉';
+          claimBtn.disabled = false;
+          claimBtn.className = 'px-4 py-3 rounded-2xl text-base sm:text-lg transition flex items-center justify-center gap-1.5 shrink-0 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border-2 border-emerald-300 active:scale-95';
+          claimBtnText.textContent = '오늘 스티커 완료!';
+        } else {
+          cheerEl.textContent = '와아! 오늘 할 일을 모두 끝냈어요! 🎉';
+          claimBtn.disabled = false;
+          claimBtn.className = 'px-4 py-3 rounded-2xl text-base sm:text-lg transition flex items-center justify-center gap-1.5 shrink-0 bg-gradient-to-r from-amber-400 via-pink-400 to-rose-400 text-white border-2 border-amber-200 btn-claim-ready active:scale-95 cursor-pointer';
+          claimBtnText.textContent = '스티커 받기!';
+        }
+      }
+    }
+
+    function renderStickerBook() {
+      document.getElementById('target-gift-title').textContent = state.targetGift;
+      const totalDailyCompleted = Math.max(state.completedBooks, state.completedBooksHistory.length);
+      document.getElementById('completed-books-badge').textContent = `완성한 스티커북: ${totalDailyCompleted}권 🏆 · 기록보기`;
+      document.getElementById('nav-sticker-count').textContent = `${state.stickers.length}/30`;
+
+      const dailyBanner = document.getElementById('daily-complete-banner');
+      if (dailyBanner) {
+        if (state.stickers.length >= 30) {
+          dailyBanner.classList.remove('hidden');
+        } else {
+          dailyBanner.classList.add('hidden');
+        }
+      }
+
+      const enabledCount = getEnabledStickerIds().length;
+      const previewBtn = document.getElementById('open-preview-stickers-btn');
+      if (previewBtn) {
+        previewBtn.textContent = `👀 스티커 미리보기 (${enabledCount}종)`;
+      }
+      const previewArBtn = document.getElementById('open-preview-ar-stickers-btn');
+      if (previewArBtn) {
+        previewArBtn.textContent = `👀 스티커 미리보기 (${enabledCount}종)`;
+      }
+
+      const gridEl = document.getElementById('sticker-grid');
+      gridEl.innerHTML = '';
+
+      for (let i = 0; i < 30; i++) {
+        const slot = document.createElement('div');
+        const sticker = state.stickers[i];
+        const isLastGoalSlot = i === 29;
+
+        if (sticker) {
+          slot.className = isLastGoalSlot
+            ? 'aspect-square rounded-2xl bg-gradient-to-br from-amber-100 via-pink-50 to-rose-100 border-2 border-pink-300 p-1 flex flex-col items-center justify-center relative cursor-pointer transition group shadow-xs'
+            : 'aspect-square rounded-2xl bg-amber-50/70 border border-amber-200/80 p-1 flex flex-col items-center justify-center relative cursor-pointer transition group';
+          slot.title = `${sticker.dateLabel} 받은 스티커 (누르면 지우기)`;
+
+          const imgWrap = document.createElement('div');
+          imgWrap.className = 'w-full h-full flex items-center justify-center animate-pop-in';
+          imgWrap.style.setProperty('--tilt', `${sticker.tilt || 0}deg`);
+          imgWrap.style.transform = `rotate(${sticker.tilt || 0}deg)`;
+          imgWrap.innerHTML = renderStickerImage(sticker);
+
+          const dateBadge = document.createElement('span');
+          dateBadge.className = 'absolute -bottom-1.5 px-1.5 py-0.2 rounded-full bg-white/95 text-[10px] sm:text-xs text-slate-600 border border-amber-200 shadow-2xs z-10';
+          dateBadge.textContent = sticker.dateLabel;
+
+          slot.append(imgWrap, dateBadge);
+
+          if (isLastGoalSlot) {
+            const giftCorner = document.createElement('span');
+            giftCorner.className = 'absolute -top-2 -right-1.5 text-sm sm:text-base bg-white rounded-full px-1 shadow-xs border border-pink-200 z-10';
+            giftCorner.textContent = '🎁';
+            slot.appendChild(giftCorner);
+          }
+
+          slot.addEventListener('click', () => openDeleteStickerModal(i, 'daily'));
+        } else if (isLastGoalSlot) {
+          slot.className = 'aspect-square rounded-2xl bg-gradient-to-br from-pink-50 via-amber-50 to-rose-100 border-2 border-dashed border-pink-300 flex flex-col items-center justify-center relative select-none p-1.5 shadow-2xs';
+          slot.title = `30일 완성 목표 선물: ${state.targetGift}`;
+          slot.innerHTML = `
+            <div class="w-4/5 h-4/5 flex items-center justify-center anim-sticker-float cute-sticker-icon">
+              <svg viewBox="0 0 80 80" class="w-full h-full overflow-visible">
+                <g stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="18" y="34" width="44" height="32" rx="6" fill="#ff85a2" stroke="#b5335a" stroke-width="3.2"/>
+                  <rect x="14" y="25" width="52" height="12" rx="4.5" fill="#ff5c8a" stroke="#b5335a" stroke-width="3.2"/>
+                  <rect x="35" y="25" width="10" height="41" fill="#ffd166" stroke="#b5335a" stroke-width="2.6"/>
+                  <path d="M40 25 C29 10, 17 16, 25 24 Z" fill="#ffd166" stroke="#b5335a" stroke-width="3"/>
+                  <path d="M40 25 C51 10, 63 16, 55 24 Z" fill="#ffd166" stroke="#b5335a" stroke-width="3"/>
+                  <circle cx="40" cy="24" r="4.5" fill="#ffe699" stroke="#b5335a" stroke-width="2.5"/>
+                </g>
+              </svg>
+            </div>
+            <span style="font-family: 'Noto Sans KR', sans-serif; font-weight: 500;" class="absolute -bottom-2 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 text-white text-xs sm:text-sm tracking-wider border-2 border-white shadow-sm whitespace-nowrap">선물!</span>
+          `;
+        } else {
+          slot.className = 'aspect-square rounded-2xl bg-white/80 border-2 border-dashed border-amber-200/90 flex items-center justify-center text-amber-300 text-base sm:text-xl select-none';
+          slot.textContent = i + 1;
+        }
+
+        gridEl.appendChild(slot);
+      }
+    }
+
+    function renderArBook() {
+      document.getElementById('ar-target-gift-title').textContent = state.arTargetGift;
+      const totalArCompleted = Math.max(state.arCompletedBooks, state.arCompletedBooksHistory.length);
+      document.getElementById('ar-completed-books-badge').textContent = `완성한 AR 퀴즈북: ${totalArCompleted}권 🏆 · 기록보기`;
+      document.getElementById('nav-ar-count').textContent = `${state.arStickers.length}/50`;
+
+      const arBanner = document.getElementById('ar-complete-banner');
+      if (arBanner) {
+        if (state.arStickers.length >= 50) {
+          arBanner.classList.remove('hidden');
+        } else {
+          arBanner.classList.add('hidden');
+        }
+      }
+
+      const gridEl = document.getElementById('ar-sticker-grid');
+      gridEl.innerHTML = '';
+
+      for (let i = 0; i < 50; i++) {
+        const slot = document.createElement('div');
+        const sticker = state.arStickers[i];
+        const isLastGoalSlot = i === 49;
+
+        if (sticker) {
+          slot.className = isLastGoalSlot
+            ? 'aspect-square rounded-2xl bg-gradient-to-br from-amber-100 via-pink-50 to-rose-100 border-2 border-pink-300 p-1 flex flex-col items-center justify-center relative cursor-pointer transition group shadow-xs'
+            : 'aspect-square rounded-2xl bg-amber-50/70 border border-amber-200/80 p-1 flex flex-col items-center justify-center relative cursor-pointer transition group';
+          slot.title = `${sticker.dateLabel} 받은 AR 스티커 (누르면 지우기)`;
+
+          const imgWrap = document.createElement('div');
+          imgWrap.className = 'w-full h-full flex items-center justify-center animate-pop-in';
+          imgWrap.style.setProperty('--tilt', `${sticker.tilt || 0}deg`);
+          imgWrap.style.transform = `rotate(${sticker.tilt || 0}deg)`;
+          imgWrap.innerHTML = renderStickerImage(sticker);
+
+          const dateBadge = document.createElement('span');
+          dateBadge.className = 'absolute -bottom-1.5 px-1.5 py-0.2 rounded-full bg-white/95 text-[10px] sm:text-xs text-slate-600 border border-amber-200 shadow-2xs z-10';
+          dateBadge.textContent = sticker.dateLabel;
+
+          slot.append(imgWrap, dateBadge);
+
+          if (isLastGoalSlot) {
+            const giftCorner = document.createElement('span');
+            giftCorner.className = 'absolute -top-2 -right-1.5 text-sm sm:text-base bg-white rounded-full px-1 shadow-xs border border-pink-200 z-10';
+            giftCorner.textContent = '🎁';
+            slot.appendChild(giftCorner);
+          }
+
+          slot.addEventListener('click', () => openDeleteStickerModal(i, 'ar'));
+        } else if (isLastGoalSlot) {
+          slot.className = 'aspect-square rounded-2xl bg-gradient-to-br from-pink-50 via-amber-50 to-rose-100 border-2 border-dashed border-pink-300 flex flex-col items-center justify-center relative select-none p-1.5 shadow-2xs';
+          slot.title = `50개 완성 목표 선물: ${state.arTargetGift}`;
+          slot.innerHTML = `
+            <div class="w-4/5 h-4/5 flex items-center justify-center anim-sticker-float cute-sticker-icon">
+              <svg viewBox="0 0 80 80" class="w-full h-full overflow-visible">
+                <g stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="18" y="34" width="44" height="32" rx="6" fill="#ff85a2" stroke="#b5335a" stroke-width="3.2"/>
+                  <rect x="14" y="25" width="52" height="12" rx="4.5" fill="#ff5c8a" stroke="#b5335a" stroke-width="3.2"/>
+                  <rect x="35" y="25" width="10" height="41" fill="#ffd166" stroke="#b5335a" stroke-width="2.6"/>
+                  <path d="M40 25 C29 10, 17 16, 25 24 Z" fill="#ffd166" stroke="#b5335a" stroke-width="3"/>
+                  <path d="M40 25 C51 10, 63 16, 55 24 Z" fill="#ffd166" stroke="#b5335a" stroke-width="3"/>
+                  <circle cx="40" cy="24" r="4.5" fill="#ffe699" stroke="#b5335a" stroke-width="2.5"/>
+                </g>
+              </svg>
+            </div>
+            <span style="font-family: 'Noto Sans KR', sans-serif; font-weight: 500;" class="absolute -bottom-2 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 text-white text-xs sm:text-sm tracking-wider border-2 border-white shadow-sm whitespace-nowrap">선물!</span>
+          `;
+        } else {
+          slot.className = 'aspect-square rounded-2xl bg-white/80 border-2 border-dashed border-amber-200/90 flex items-center justify-center text-amber-300 text-base sm:text-xl select-none';
+          slot.textContent = i + 1;
+        }
+
+        gridEl.appendChild(slot);
+      }
+    }
+
+    // ==========================================
+    // 9. 할 일 추가 / 완료 / 이동 / 삭제 액션
+    // ==========================================
+    function updateColorPickerUI() {
+      document.querySelectorAll('.color-dot').forEach(d => {
+        d.classList.remove(
+          'border-pink-500',
+          'border-purple-500',
+          'border-orange-500',
+          'border-emerald-500',
+          'border-sky-500',
+          'border-amber-500',
+          'scale-110'
+        );
+        d.classList.add('border-transparent');
+        if (d.dataset.color === state.selectedColor) {
+          const ringClass = PASTEL_COLORS[state.selectedColor]?.ring || 'border-purple-500';
+          d.classList.remove('border-transparent');
+          d.classList.add(ringClass, 'scale-110');
+        }
+      });
+    }
+
+    function addTodo(text, colorOverride = null) {
+      const clean = text.trim();
+      if (!clean) return;
+
+      state.todos.push({
+        id: Date.now() + Math.floor(Math.random() * 1000),
+        text: clean,
+        completed: false,
+        color: colorOverride || state.selectedColor
+      });
+      saveState();
+      renderTodos();
+      playSound('add');
+    }
+
+    function toggleTodo(id) {
+      const target = state.todos.find(t => t.id === id);
+      if (!target) return;
+      target.completed = !target.completed;
+      saveState();
+      renderTodos();
+      if (target.completed) {
+        playSound('check');
+      }
+    }
+
+    function moveTodo(fromIndex, toIndex) {
+      if (toIndex < 0 || toIndex >= state.todos.length) return;
+      const [moved] = state.todos.splice(fromIndex, 1);
+      state.todos.splice(toIndex, 0, moved);
+      saveState();
+      renderTodos();
+    }
+
+    function deleteTodo(id) {
+      const idx = state.todos.findIndex(t => t.id === id);
+      if (idx === -1) return;
+      const [removed] = state.todos.splice(idx, 1);
+      lastDeletedTodo = { item: removed, index: idx };
+      saveState();
+      renderTodos();
+      showToast(`"${removed.text}" 항목을 지웠어요.`);
+    }
+
+    function showToast(msg, hideUndo = false) {
+      const toast = document.getElementById('toast');
+      const undoBtn = document.getElementById('toast-undo-btn');
+      document.getElementById('toast-msg').textContent = msg;
+      if (hideUndo) {
+        undoBtn.classList.add('hidden');
+      } else {
+        undoBtn.classList.remove('hidden');
+      }
+      toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
+      }, 4000);
+    }
+
+    // ==========================================
+    // 10. 스티커 받기 및 취소 로직
+    // ==========================================
+    function pickRandomCuteSticker(existingList) {
+      const enabledIds = getEnabledStickerIds();
+      const availablePool = STICKER_COLLECTION.filter(s => enabledIds.includes(s.id));
+      const basePool = availablePool.length > 0 ? availablePool : STICKER_COLLECTION;
+
+      const usedIds = existingList.slice(-6).map(s => resolveStickerIndex(s));
+      const candidates = basePool.filter(s => !usedIds.includes(s.id));
+      const pool = candidates.length > 0 ? candidates : basePool;
+      const chosen = pool[Math.floor(Math.random() * pool.length)];
+      const chosenTilt = Math.floor(Math.random() * 11) - 5;
+
+      return {
+        chosen,
+        sticker: {
+          dateKey: getTodayKey(),
+          dateLabel: getShortDateLabel(),
+          stickerId: chosen.id,
+          tilt: chosenTilt
+        }
+      };
+    }
+
+    function claimTodaySticker() {
+      const total = state.todos.length;
+      const done = state.todos.filter(t => t.completed).length;
+
+      if (total === 0 || done < total) return;
+
+      if (state.stickers.length >= 30) {
+        switchTab('stickers');
+        openGiftVoucherModal('daily');
+        return;
+      }
+
+      const todayKey = getTodayKey();
+      const alreadyClaimed = state.stickers.some(s => s.dateKey === todayKey);
+      if (alreadyClaimed) {
+        switchTab('stickers');
+        return;
+      }
+
+      const { chosen, sticker: newSticker } = pickRandomCuteSticker(state.stickers);
+
+      state.stickers.push(newSticker);
+
+      if (state.stickers.length === 30) {
+        const nextBookNum = Math.max(state.completedBooks, state.completedBooksHistory.length) + 1;
+        state.completedBooks = nextBookNum;
+        state.completedBooksHistory.push({
+          id: Date.now(),
+          bookNumber: nextBookNum,
+          completedDate: getFullKoreanDate(),
+          gift: state.targetGift,
+          stickers: state.stickers.map(s => ({ ...s }))
+        });
+        saveState();
+        renderAll();
+        switchTab('stickers');
+        playSound('fanfare');
+        launchConfetti();
+        openGiftVoucherModal('daily');
+        return;
+      }
+
+      saveState();
+      renderAll();
+
+      playSound('fanfare');
+      launchConfetti();
+      openStickerModal(newSticker, chosen.praise || chosen.label, 'daily');
+    }
+
+    function claimArSticker() {
+      if (state.arStickers.length >= 50) {
+        openGiftVoucherModal('ar');
+        return;
+      }
+
+      const { chosen, sticker: newSticker } = pickRandomCuteSticker(state.arStickers);
+
+      state.arStickers.push(newSticker);
+
+      if (state.arStickers.length === 50) {
+        const nextBookNum = Math.max(state.arCompletedBooks, state.arCompletedBooksHistory.length) + 1;
+        state.arCompletedBooks = nextBookNum;
+        state.arCompletedBooksHistory.push({
+          id: Date.now(),
+          bookNumber: nextBookNum,
+          completedDate: getFullKoreanDate(),
+          gift: state.arTargetGift,
+          stickers: state.arStickers.map(s => ({ ...s }))
+        });
+        saveState();
+        renderAll();
+        playSound('fanfare');
+        launchConfetti();
+        openGiftVoucherModal('ar');
+        return;
+      }
+
+      saveState();
+      renderAll();
+
+      playSound('fanfare');
+      launchConfetti();
+      openStickerModal(newSticker, chosen.praise || chosen.label, 'ar');
+    }
+
+    // ==========================================
+    // 10-1. 목표 선물 교환권 화면 & 새 스티커북 시작하기
+    // ==========================================
+    function openGiftVoucherModal(bookType = 'daily', archiveRecord = null) {
+      voucherBookType = bookType;
+      const modal = document.getElementById('gift-voucher-modal');
+      const badgeEl = document.getElementById('voucher-book-badge');
+      const subEl = document.getElementById('voucher-subtitle');
+      const giftEl = document.getElementById('voucher-gift-name');
+      const dateEl = document.getElementById('voucher-date-label');
+      const startNewBtn = document.getElementById('voucher-start-new-btn');
+      const closeBtn = document.getElementById('voucher-close-btn');
+
+      if (archiveRecord) {
+        const typeLabel = bookType === 'ar' ? 'AR 퀴즈북 50개 달성' : '칭찬 스티커북 30개 달성';
+        badgeEl.textContent = `👑 제 ${archiveRecord.bookNumber}권 완성 · ${typeLabel}`;
+        subEl.textContent = '스스로 끝까지 해내서 받은 소중한 선물 교환권 기록이에요!';
+        giftEl.textContent = archiveRecord.gift || '목표 선물 달성!';
+        dateEl.textContent = archiveRecord.completedDate || '';
+        startNewBtn.classList.add('hidden');
+        closeBtn.textContent = '보관함으로 돌아가기 🏆';
+      } else if (bookType === 'ar') {
+        const latestRec = state.arCompletedBooksHistory[state.arCompletedBooksHistory.length - 1];
+        const bookNum = latestRec ? latestRec.bookNumber : Math.max(1, state.arCompletedBooks);
+        badgeEl.textContent = `👑 AR 퀴즈북 제 ${bookNum}권 · 50개 완성!`;
+        subEl.textContent = '영어책을 읽고 AR 퀴즈 80% 이상을 50번이나 해냈어요!';
+        giftEl.textContent = state.arTargetGift;
+        dateEl.textContent = (latestRec && latestRec.completedDate) || getFullKoreanDate();
+        startNewBtn.textContent = '✨ 선물 확인 완료! 새 AR 퀴즈북 시작하기';
+        startNewBtn.classList.remove('hidden');
+        closeBtn.textContent = '완성된 스티커판 먼저 구경하기 📚';
+      } else {
+        const latestRec = state.completedBooksHistory[state.completedBooksHistory.length - 1];
+        const bookNum = latestRec ? latestRec.bookNumber : Math.max(1, state.completedBooks);
+        badgeEl.textContent = `👑 칭찬 스티커북 제 ${bookNum}권 · 30개 완성!`;
+        subEl.textContent = '오늘의 약속을 30번이나 스스로 지킨 멋진 Amy에게 드립니다!';
+        giftEl.textContent = state.targetGift;
+        dateEl.textContent = (latestRec && latestRec.completedDate) || getFullKoreanDate();
+        startNewBtn.textContent = '✨ 선물 확인 완료! 새 스티커북 시작하기';
+        startNewBtn.classList.remove('hidden');
+        closeBtn.textContent = '완성된 스티커판 먼저 구경하기 🌟';
+      }
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeGiftVoucherModal() {
+      const modal = document.getElementById('gift-voucher-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function openNewBookConfirmModal(bookType = 'daily') {
+      pendingNewBookType = bookType;
+      const isAr = bookType === 'ar';
+      document.getElementById('new-book-confirm-title').textContent = isAr
+        ? '새 AR 퀴즈북을 시작할까요?'
+        : '새 스티커북을 시작할까요?';
+      document.getElementById('new-book-confirm-desc').innerHTML = isAr
+        ? '선물 교환을 부모님과 함께 확인하셨나요?<br />완성한 50개 스티커판은 <strong class="text-indigo-700 font-normal">[보관함 🏆]</strong>에 안전하게 저장되어 있고, 1번 칸부터 새로 시작합니다!'
+        : '선물 교환을 부모님과 함께 확인하셨나요?<br />완성한 30개 스티커판은 <strong class="text-purple-700 font-normal">[보관함 🏆]</strong>에 안전하게 저장되어 있고, 1번 칸부터 새로 시작합니다!';
+
+      const modal = document.getElementById('new-book-confirm-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeNewBookConfirmModal() {
+      const modal = document.getElementById('new-book-confirm-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function executeStartNewBook() {
+      if (pendingNewBookType === 'ar') {
+        state.arStickers = [];
+        saveState();
+        renderAll();
+        switchTab('ar');
+        showToast('새로운 AR 퀴즈북 1번 칸부터 시작해요! 📚✨', true);
+      } else {
+        state.stickers = [];
+        saveState();
+        renderAll();
+        switchTab('stickers');
+        showToast('새로운 칭찬 스티커북 1번 칸부터 시작해요! 🌟✨', true);
+      }
+      playSound('add');
+      closeNewBookConfirmModal();
+    }
+
+    function openStickerModal(sticker, labelText, bookType = 'daily') {
+      lastClaimedType = bookType;
+      const modal = document.getElementById('sticker-modal');
+      const goBookBtn = document.getElementById('modal-go-book-btn');
+      document.getElementById('modal-sticker-preview').innerHTML = renderStickerImage(sticker);
+
+      if (bookType === 'ar') {
+        const count = state.arStickers.length;
+        document.getElementById('modal-badge').textContent = `📚 ${sticker.dateLabel} · ${count}번째 AR 스티커`;
+        goBookBtn.textContent = 'AR 퀴즈북 확인하기 📚';
+
+        if (count === 50) {
+          document.getElementById('modal-title').textContent = '🎉 50개 AR 퀴즈북 완성! 🎉';
+          document.getElementById('modal-desc').innerHTML = `축하해요!<br>목표 선물 [${state.arTargetGift}] 교환권이 열렸어요!`;
+        } else {
+          document.getElementById('modal-title').textContent = labelText || '80% 이상 통과 최고예요!';
+          document.getElementById('modal-desc').innerHTML = `스스로 책을 읽고 AR 퀴즈 80% 이상을 통과했어요!<br>(목표까지 ${50 - count}개)`;
+        }
+      } else {
+        const count = state.stickers.length;
+        document.getElementById('modal-badge').textContent = `📅 ${sticker.dateLabel} · ${count}번째 스티커`;
+        goBookBtn.textContent = '스티커북 보러가기 🌟';
+
+        if (count === 30) {
+          document.getElementById('modal-title').textContent = '🎉 30개 스티커북 완성! 🎉';
+          document.getElementById('modal-desc').innerHTML = `축하해요!<br>목표 선물 [${state.targetGift}] 교환권이 열렸어요!`;
+        } else {
+          document.getElementById('modal-title').textContent = labelText || '참 잘했어요!';
+          document.getElementById('modal-desc').innerHTML = `오늘의 약속을 모두 지켜서 칭찬 스티커를 받았어요!<br>(목표까지 ${30 - count}개)`;
+        }
+      }
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeStickerModal() {
+      const modal = document.getElementById('sticker-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function openDeleteStickerModal(index, bookType = 'daily') {
+      const list = bookType === 'ar' ? state.arStickers : state.stickers;
+      if (list.length === 0 || index < 0 || index >= list.length) return;
+      pendingDeleteBookType = bookType;
+      pendingDeleteStickerIndex = index;
+      const target = list[index];
+      const bookLabel = bookType === 'ar' ? 'AR 퀴즈북 ' : '';
+      document.getElementById('delete-sticker-info').textContent =
+        `${bookLabel}${index + 1}번 칸 (${target.dateLabel}) 스티커를 지울까요?`;
+      document.getElementById('delete-sticker-preview').innerHTML = renderStickerImage(target);
+
+      const modal = document.getElementById('delete-sticker-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeDeleteStickerModal() {
+      pendingDeleteStickerIndex = null;
+      const modal = document.getElementById('delete-sticker-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    // ==========================================
+    // 10-2. 17가지 스티커 미리보기(도감) 및 선택 관리
+    // ==========================================
+    function getEnabledStickerIds() {
+      if (Array.isArray(state.enabledStickerIds) && state.enabledStickerIds.length > 0) {
+        return state.enabledStickerIds.filter(id => id >= 0 && id < STICKER_COLLECTION.length);
+      }
+      return STICKER_COLLECTION.map(s => s.id);
+    }
+
+    function toggleStickerEnabled(id) {
+      let current = [...getEnabledStickerIds()];
+      if (current.includes(id)) {
+        if (current.length <= 1) {
+          showToast('최소 1가지 이상의 스티커는 켜두어야 해요!', true);
+          return;
+        }
+        current = current.filter(item => item !== id);
+      } else {
+        current.push(id);
+      }
+      state.enabledStickerIds = current.length === STICKER_COLLECTION.length ? null : current;
+      saveState();
+      renderPreviewStickersModal();
+      renderStickerBook();
+    }
+
+    function renderPreviewStickersModal() {
+      const grid = document.getElementById('preview-stickers-grid');
+      const countEl = document.getElementById('enabled-sticker-count');
+      const enabledIds = getEnabledStickerIds();
+      countEl.textContent = `${enabledIds.length}종`;
+      grid.innerHTML = '';
+
+      STICKER_COLLECTION.forEach(item => {
+        const isEnabled = enabledIds.includes(item.id);
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = `rounded-2xl p-2.5 border-2 flex flex-col items-center justify-between transition relative ${
+          isEnabled
+            ? 'bg-amber-50/70 border-amber-300 shadow-2xs hover:bg-amber-100/70'
+            : 'bg-slate-50 border-slate-200 opacity-45 hover:opacity-75'
+        }`;
+
+        const badge = document.createElement('span');
+        badge.className = `absolute top-1.5 right-1.5 text-[10px] px-1.5 py-0.2 rounded-full ${
+          isEnabled ? 'bg-emerald-500 text-white' : 'bg-slate-300 text-slate-600'
+        }`;
+        badge.textContent = isEnabled ? '사용중' : '제외';
+
+        const numTag = document.createElement('span');
+        numTag.className = 'self-start text-[11px] text-slate-400';
+        numTag.textContent = `#${item.id + 1}`;
+
+        const iconBox = document.createElement('div');
+        iconBox.className = 'w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center my-1';
+        iconBox.innerHTML = renderStickerImage({ stickerId: item.id });
+
+        const title = document.createElement('span');
+        title.className = 'text-xs sm:text-sm text-slate-700 text-center leading-tight';
+        title.textContent = item.label;
+
+        card.append(numTag, badge, iconBox, title);
+        card.addEventListener('click', () => toggleStickerEnabled(item.id));
+        grid.appendChild(card);
+      });
+    }
+
+    function openPreviewStickersModal() {
+      renderPreviewStickersModal();
+      const modal = document.getElementById('preview-stickers-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closePreviewStickersModal() {
+      const modal = document.getElementById('preview-stickers-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    // ==========================================
+    // 10-3. 완성한 스티커북 보관함 모달 렌더링
+    // ==========================================
+    function openHistoryModal(bookType = 'daily') {
+      historyModalBookType = bookType;
+      renderHistoryList();
+      const modal = document.getElementById('history-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeHistoryModal() {
+      const modal = document.getElementById('history-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function renderHistoryList() {
+      const listView = document.getElementById('history-list-view');
+      const detailView = document.getElementById('history-detail-view');
+      const backBtn = document.getElementById('history-back-btn');
+      const tabsEl = document.getElementById('history-tabs');
+      const titleEl = document.getElementById('history-modal-title');
+      const tabDaily = document.getElementById('history-tab-daily');
+      const tabAr = document.getElementById('history-tab-ar');
+
+      detailView.classList.add('hidden');
+      listView.classList.remove('hidden');
+      backBtn.classList.add('hidden');
+      tabsEl.classList.remove('hidden');
+      titleEl.textContent = '🏆 완성한 스티커북 보관함';
+
+      const dailyCount = Math.max(state.completedBooks, state.completedBooksHistory.length);
+      const arCount = Math.max(state.arCompletedBooks, state.arCompletedBooksHistory.length);
+      tabDaily.textContent = `🌟 칭찬 스티커북 (${dailyCount}권)`;
+      tabAr.textContent = `📚 AR 퀴즈북 (${arCount}권)`;
+
+      if (historyModalBookType === 'daily') {
+        tabDaily.className = 'py-2 px-3 rounded-xl text-xs sm:text-sm transition bg-white text-amber-900 shadow-2xs';
+        tabAr.className = 'py-2 px-3 rounded-xl text-xs sm:text-sm transition text-slate-600 hover:bg-white/60';
+      } else {
+        tabAr.className = 'py-2 px-3 rounded-xl text-xs sm:text-sm transition bg-white text-sky-900 shadow-2xs';
+        tabDaily.className = 'py-2 px-3 rounded-xl text-xs sm:text-sm transition text-slate-600 hover:bg-white/60';
+      }
+
+      const history = historyModalBookType === 'ar' ? state.arCompletedBooksHistory : state.completedBooksHistory;
+      const totalCount = historyModalBookType === 'ar' ? arCount : dailyCount;
+      const goalMax = historyModalBookType === 'ar' ? 50 : 30;
+      listView.innerHTML = '';
+
+      if (history.length === 0) {
+        const emptyBox = document.createElement('div');
+        emptyBox.className = 'bg-white/90 rounded-2xl p-7 text-center border-2 border-dashed border-amber-200';
+        emptyBox.innerHTML = `
+          <div class="text-4xl mb-2">🏆</div>
+          <p class="text-base sm:text-lg text-slate-700">
+            ${totalCount > 0 ? `지금까지 총 ${totalCount}권을 완성했어요!` : '아직 완성한 스티커북이 없어요!'}
+          </p>
+          <p class="text-xs sm:text-sm text-slate-400 mt-1">
+            스티커 ${goalMax}개를 끝까지 모으면 이곳에 스티커판과 선물 기록이 저장돼요!
+          </p>
+        `;
+        listView.appendChild(emptyBox);
+        return;
+      }
+
+      [...history].reverse().forEach(record => {
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-2xl p-4 border-2 border-amber-200/90 shadow-2xs flex flex-col gap-3';
+
+        const topRow = document.createElement('div');
+        topRow.className = 'flex items-start justify-between gap-2';
+        topRow.innerHTML = `
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 text-white text-xs sm:text-sm">
+                제 ${record.bookNumber}권 완성 🏆
+              </span>
+              <span class="text-xs text-slate-400">${record.completedDate || ''}</span>
+            </div>
+            <p class="text-sm sm:text-base text-slate-800 mt-1.5">
+              🎁 목표 선물: <span class="text-pink-600">${record.gift || '목표 선물 달성!'}</span>
+            </p>
+          </div>
+        `;
+
+        const openBtn = document.createElement('button');
+        openBtn.type = 'button';
+        openBtn.className = 'px-3 py-2 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 text-xs sm:text-sm shrink-0 transition active:scale-95';
+        openBtn.textContent = '스티커판 보기 👀';
+        openBtn.addEventListener('click', () => renderHistoryDetail(record, goalMax));
+
+        const voucherBtn = document.createElement('button');
+        voucherBtn.type = 'button';
+        voucherBtn.className = 'px-3 py-2 rounded-xl bg-pink-100 hover:bg-pink-200 text-pink-800 border border-pink-300 text-xs sm:text-sm shrink-0 transition active:scale-95';
+        voucherBtn.textContent = '🎟️ 교환권';
+        voucherBtn.addEventListener('click', () => openGiftVoucherModal(historyModalBookType, record));
+
+        const deleteRecBtn = document.createElement('button');
+        deleteRecBtn.type = 'button';
+        deleteRecBtn.className = 'px-2.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs sm:text-sm shrink-0 transition active:scale-95';
+        deleteRecBtn.textContent = '🗑️ 삭제';
+        deleteRecBtn.title = '이 완성 기록 삭제하기';
+        deleteRecBtn.addEventListener('click', () => deleteHistoryRecord(historyModalBookType, record.id));
+
+        const btnGroup = document.createElement('div');
+        btnGroup.className = 'flex flex-wrap sm:flex-nowrap gap-1.5 shrink-0';
+        btnGroup.append(voucherBtn, openBtn, deleteRecBtn);
+        topRow.appendChild(btnGroup);
+
+        const miniRow = document.createElement('div');
+        miniRow.className = 'grid grid-cols-5 gap-1.5 bg-amber-50/60 p-2 rounded-xl border border-amber-100';
+        const sampleStickers = (record.stickers || []).slice(0, 5);
+        sampleStickers.forEach(st => {
+          const cell = document.createElement('div');
+          cell.className = 'aspect-square rounded-lg bg-white p-1 flex items-center justify-center border border-amber-100';
+          cell.innerHTML = renderStickerImage(st);
+          miniRow.appendChild(cell);
+        });
+
+        card.append(topRow, miniRow);
+        listView.appendChild(card);
+      });
+    }
+
+    function renderHistoryDetail(record, goalMax) {
+      const listView = document.getElementById('history-list-view');
+      const detailView = document.getElementById('history-detail-view');
+      const backBtn = document.getElementById('history-back-btn');
+      const tabsEl = document.getElementById('history-tabs');
+      const titleEl = document.getElementById('history-modal-title');
+
+      listView.classList.add('hidden');
+      tabsEl.classList.add('hidden');
+      detailView.classList.remove('hidden');
+      backBtn.classList.remove('hidden');
+
+      titleEl.textContent = `제 ${record.bookNumber}권 완성 기록`;
+      document.getElementById('history-detail-badge').textContent = `제 ${record.bookNumber}권 (${goalMax}개 달성)`;
+      document.getElementById('history-detail-date').textContent = record.completedDate || '';
+      document.getElementById('history-detail-gift').textContent = `🎁 목표 선물: ${record.gift || '목표 선물 달성!'}`;
+
+      const grid = document.getElementById('history-detail-grid');
+      grid.innerHTML = '';
+
+      for (let i = 0; i < goalMax; i++) {
+        const st = record.stickers && record.stickers[i];
+        const isLast = i === goalMax - 1;
+        const slot = document.createElement('div');
+        slot.className = isLast
+          ? 'aspect-square rounded-xl bg-gradient-to-br from-amber-100 via-pink-50 to-rose-100 border-2 border-pink-300 p-1 flex flex-col items-center justify-center relative'
+          : 'aspect-square rounded-xl bg-amber-50/70 border border-amber-200/80 p-1 flex flex-col items-center justify-center relative';
+
+        if (st) {
+          const imgWrap = document.createElement('div');
+          imgWrap.className = 'w-full h-full flex items-center justify-center';
+          imgWrap.style.transform = `rotate(${st.tilt || 0}deg)`;
+          imgWrap.innerHTML = renderStickerImage(st);
+
+          const dateBadge = document.createElement('span');
+          dateBadge.className = 'absolute -bottom-1 px-1 rounded-full bg-white/95 text-[9px] sm:text-[10px] text-slate-600 border border-amber-200 z-10';
+          dateBadge.textContent = st.dateLabel || '';
+
+          slot.append(imgWrap, dateBadge);
+
+          if (isLast) {
+            const giftCorner = document.createElement('span');
+            giftCorner.className = 'absolute -top-1.5 -right-1 text-xs bg-white rounded-full px-0.5 shadow-2xs border border-pink-200 z-10';
+            giftCorner.textContent = '🎁';
+            slot.appendChild(giftCorner);
+          }
+        } else {
+          slot.textContent = i + 1;
+          slot.classList.add('text-amber-300', 'text-xs');
+        }
+
+        grid.appendChild(slot);
+      }
+    }
+
+    // ==========================================
+    // 10-4. 완성 보관함 개별 기록 삭제 & 부모님용 전체 기록 초기화
+    // ==========================================
+    function deleteHistoryRecord(bookType, recordId) {
+      if (bookType === 'ar') {
+        state.arCompletedBooksHistory = state.arCompletedBooksHistory.filter(r => r.id !== recordId);
+        state.arCompletedBooks = state.arCompletedBooksHistory.length;
+      } else {
+        state.completedBooksHistory = state.completedBooksHistory.filter(r => r.id !== recordId);
+        state.completedBooks = state.completedBooksHistory.length;
+      }
+      saveState();
+      renderAll();
+      renderHistoryList();
+      showToast('완성 기록을 깔끔하게 삭제했어요! 🗑️', true);
+    }
+
+    function openResetAllModal() {
+      const modal = document.getElementById('reset-all-modal');
+      const checkbox = document.getElementById('reset-confirm-checkbox');
+      const confirmBtn = document.getElementById('reset-all-confirm-btn');
+      checkbox.checked = false;
+      confirmBtn.disabled = true;
+      confirmBtn.className = 'flex-1 py-2.5 rounded-2xl bg-slate-200 text-slate-400 text-base transition cursor-not-allowed';
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeResetAllModal() {
+      const modal = document.getElementById('reset-all-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function executeFullReset() {
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch (e) {
+        // 스토리지 예외 무시
+      }
+      state = createDefaultState();
+      saveState();
+      renderAll();
+      switchTab('todos');
+      closeResetAllModal();
+      playSound('add');
+      showToast('모든 기록을 깨끗하게 초기화했어요! ✨', true);
+    }
+
+    // ==========================================
+    // 11. 탭 전환 & 이벤트 리스너 연결
+    // ==========================================
+    function switchTab(tabName) {
+      const btnTodos = document.getElementById('tab-btn-todos');
+      const btnStickers = document.getElementById('tab-btn-stickers');
+      const btnAr = document.getElementById('tab-btn-ar');
+      const viewTodos = document.getElementById('view-todos');
+      const viewStickers = document.getElementById('view-stickers');
+      const viewAr = document.getElementById('view-ar');
+
+      const baseTabClass = 'py-2.5 sm:py-3 px-2 sm:px-3 rounded-xl text-xs sm:text-base transition flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5';
+
+      viewTodos.classList.add('hidden');
+      viewStickers.classList.add('hidden');
+      viewAr.classList.add('hidden');
+
+      btnTodos.className = `${baseTabClass} text-slate-600 hover:bg-purple-50`;
+      btnStickers.className = `${baseTabClass} text-slate-600 hover:bg-purple-50`;
+      btnAr.className = `${baseTabClass} text-slate-600 hover:bg-sky-50`;
+
+      if (tabName === 'todos') {
+        viewTodos.classList.remove('hidden');
+        btnTodos.className = `${baseTabClass} bg-gradient-to-r from-pink-400 to-rose-400 text-white shadow-sm`;
+      } else if (tabName === 'stickers') {
+        viewStickers.classList.remove('hidden');
+        btnStickers.className = `${baseTabClass} bg-gradient-to-r from-amber-400 to-orange-400 text-white shadow-sm`;
+        renderStickerBook();
+      } else if (tabName === 'ar') {
+        viewAr.classList.remove('hidden');
+        btnAr.className = `${baseTabClass} bg-gradient-to-r from-sky-400 to-indigo-400 text-white shadow-sm`;
+        renderArBook();
+      }
+    }
+
+    // 탭 클릭
+    document.getElementById('tab-btn-todos').addEventListener('click', () => switchTab('todos'));
+    document.getElementById('tab-btn-stickers').addEventListener('click', () => switchTab('stickers'));
+    document.getElementById('tab-btn-ar').addEventListener('click', () => switchTab('ar'));
+
+    // 효과음 토글
+    document.getElementById('sound-toggle-btn').addEventListener('click', () => {
+      state.soundEnabled = !state.soundEnabled;
+      saveState();
+      renderHeader();
+      if (state.soundEnabled) playSound('add');
+    });
+
+    // 부모님용 전체 초기화 버튼 & 모달 이벤트
+    document.getElementById('open-reset-all-btn').addEventListener('click', openResetAllModal);
+    document.getElementById('reset-all-cancel-btn').addEventListener('click', closeResetAllModal);
+    document.getElementById('reset-confirm-checkbox').addEventListener('change', e => {
+      const confirmBtn = document.getElementById('reset-all-confirm-btn');
+      if (e.target.checked) {
+        confirmBtn.disabled = false;
+        confirmBtn.className = 'flex-1 py-2.5 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white text-base shadow-sm transition active:scale-95 cursor-pointer';
+      } else {
+        confirmBtn.disabled = true;
+        confirmBtn.className = 'flex-1 py-2.5 rounded-2xl bg-slate-200 text-slate-400 text-base transition cursor-not-allowed';
+      }
+    });
+    document.getElementById('reset-all-confirm-btn').addEventListener('click', executeFullReset);
+
+    // 쉽게 추가하기 버튼들
+    document.querySelectorAll('.quick-add-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        addTodo(btn.dataset.quick, btn.dataset.color);
+      });
+    });
+
+    // 영어책 AR 퀴즈 서랍 토글 및 권수 추가
+    document.getElementById('ar-quiz-toggle-btn').addEventListener('click', () => {
+      const drawer = document.getElementById('ar-book-drawer');
+      const arrow = document.getElementById('ar-arrow');
+      const isHidden = drawer.classList.contains('hidden');
+      drawer.classList.toggle('hidden');
+      arrow.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+    });
+
+    document.querySelectorAll('.ar-count-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const count = btn.dataset.arCount;
+        addTodo(`영어책 읽고 AR 퀴즈풀기 (${count}권)`, 'peach');
+        document.getElementById('ar-book-drawer').classList.add('hidden');
+        document.getElementById('ar-arrow').style.transform = 'rotate(0deg)';
+      });
+    });
+
+    // 직접 입력 폼 제출
+    document.getElementById('todo-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const input = document.getElementById('todo-input');
+      if (input.value.trim()) {
+        addTodo(input.value);
+        input.value = '';
+      }
+    });
+
+    // 카드 색상 선택
+    document.querySelectorAll('.color-dot').forEach(dot => {
+      dot.addEventListener('click', () => {
+        state.selectedColor = dot.dataset.color;
+        updateColorPickerUI();
+        saveState();
+      });
+    });
+
+    // 실행 취소(Undo) 토스트
+    document.getElementById('toast-undo-btn').addEventListener('click', () => {
+      if (!lastDeletedTodo) return;
+      state.todos.splice(lastDeletedTodo.index, 0, lastDeletedTodo.item);
+      lastDeletedTodo = null;
+      saveState();
+      renderTodos();
+      document.getElementById('toast').classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
+    });
+
+    // 스티커 받기 버튼 (오늘의 약속 & AR 퀴즈북)
+    document.getElementById('claim-sticker-btn').addEventListener('click', claimTodaySticker);
+    document.getElementById('claim-ar-sticker-btn').addEventListener('click', claimArSticker);
+
+    // 스티커 축하 모달 버튼들
+    document.getElementById('modal-go-book-btn').addEventListener('click', () => {
+      closeStickerModal();
+      switchTab(lastClaimedType === 'ar' ? 'ar' : 'stickers');
+    });
+    document.getElementById('modal-close-btn').addEventListener('click', closeStickerModal);
+
+    // 축하 모달에서 실수로 눌렀을 때 즉시 취소
+    document.getElementById('modal-undo-claim-btn').addEventListener('click', () => {
+      if (lastClaimedType === 'ar') {
+        if (state.arStickers.length > 0) {
+          if (state.arStickers.length === 50 && state.arCompletedBooksHistory.length > 0) {
+            state.arCompletedBooksHistory.pop();
+            state.arCompletedBooks = Math.max(0, state.arCompletedBooks - 1);
+          }
+          state.arStickers.pop();
+          saveState();
+          renderAll();
+        }
+      } else if (state.stickers.length > 0) {
+        if (state.stickers.length === 30 && state.completedBooksHistory.length > 0) {
+          state.completedBooksHistory.pop();
+          state.completedBooks = Math.max(0, state.completedBooks - 1);
+        }
+        state.stickers.pop();
+        saveState();
+        renderAll();
+      }
+      closeStickerModal();
+    });
+
+    // 목표 선물 설정 모달 (칭찬 스티커북 & AR 퀴즈북 공용)
+    function openGiftModal(bookType) {
+      editingGiftType = bookType;
+      document.getElementById('gift-modal-desc').textContent =
+        bookType === 'ar'
+          ? 'AR 퀴즈 스티커 50개를 다 모으면 받을 선물을 적어주세요!'
+          : '스티커 30개를 다 모으면 받을 선물을 적어주세요!';
+      document.getElementById('gift-input').value =
+        bookType === 'ar' ? state.arTargetGift : state.targetGift;
+      const modal = document.getElementById('gift-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    document.getElementById('edit-gift-btn').addEventListener('click', () => openGiftModal('daily'));
+    document.getElementById('edit-ar-gift-btn').addEventListener('click', () => openGiftModal('ar'));
+
+    document.querySelectorAll('.gift-preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.getElementById('gift-input').value = btn.dataset.giftPreset;
+      });
+    });
+
+    document.getElementById('gift-cancel-btn').addEventListener('click', () => {
+      const modal = document.getElementById('gift-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    });
+
+    document.getElementById('gift-save-btn').addEventListener('click', () => {
+      const val = document.getElementById('gift-input').value.trim();
+      if (val) {
+        if (editingGiftType === 'ar') {
+          state.arTargetGift = val;
+          renderArBook();
+        } else {
+          state.targetGift = val;
+          renderStickerBook();
+        }
+        saveState();
+      }
+      const modal = document.getElementById('gift-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    });
+
+    // 스티커 지우기 버튼 & 확인 모달
+    document.getElementById('open-delete-latest-btn').addEventListener('click', () => {
+      if (state.stickers.length === 0) {
+        showToast('아직 지울 스티커가 없어요!', true);
+        return;
+      }
+      openDeleteStickerModal(state.stickers.length - 1, 'daily');
+    });
+
+    document.getElementById('open-delete-latest-ar-btn').addEventListener('click', () => {
+      if (state.arStickers.length === 0) {
+        showToast('아직 지울 AR 스티커가 없어요!', true);
+        return;
+      }
+      openDeleteStickerModal(state.arStickers.length - 1, 'ar');
+    });
+
+    document.getElementById('delete-sticker-cancel-btn').addEventListener('click', closeDeleteStickerModal);
+
+    document.getElementById('delete-sticker-confirm-btn').addEventListener('click', () => {
+      const list = pendingDeleteBookType === 'ar' ? state.arStickers : state.stickers;
+      if (pendingDeleteStickerIndex !== null && pendingDeleteStickerIndex >= 0 && pendingDeleteStickerIndex < list.length) {
+        if (pendingDeleteBookType === 'ar' && list.length === 50 && state.arCompletedBooksHistory.length > 0) {
+          state.arCompletedBooksHistory.pop();
+          state.arCompletedBooks = Math.max(0, state.arCompletedBooks - 1);
+        } else if (pendingDeleteBookType === 'daily' && list.length === 30 && state.completedBooksHistory.length > 0) {
+          state.completedBooksHistory.pop();
+          state.completedBooks = Math.max(0, state.completedBooks - 1);
+        }
+        list.splice(pendingDeleteStickerIndex, 1);
+        saveState();
+        renderAll();
+      }
+      closeDeleteStickerModal();
+    });
+
+    // 완성한 스티커북 보관함 모달 이벤트
+    document.getElementById('completed-books-badge').addEventListener('click', () => openHistoryModal('daily'));
+    document.getElementById('ar-completed-books-badge').addEventListener('click', () => openHistoryModal('ar'));
+    document.getElementById('history-close-btn').addEventListener('click', closeHistoryModal);
+    document.getElementById('history-close-top-btn').addEventListener('click', closeHistoryModal);
+    document.getElementById('history-back-btn').addEventListener('click', renderHistoryList);
+    document.getElementById('history-tab-daily').addEventListener('click', () => {
+      historyModalBookType = 'daily';
+      renderHistoryList();
+    });
+    document.getElementById('history-tab-ar').addEventListener('click', () => {
+      historyModalBookType = 'ar';
+      renderHistoryList();
+    });
+
+    // 선물 교환권 화면 & 새 스티커북 시작하기 버튼 이벤트
+    document.getElementById('open-daily-voucher-btn').addEventListener('click', () => openGiftVoucherModal('daily'));
+    document.getElementById('open-ar-voucher-btn').addEventListener('click', () => openGiftVoucherModal('ar'));
+    document.getElementById('start-new-daily-book-btn').addEventListener('click', () => openNewBookConfirmModal('daily'));
+    document.getElementById('start-new-ar-book-btn').addEventListener('click', () => openNewBookConfirmModal('ar'));
+
+    document.getElementById('voucher-close-btn').addEventListener('click', closeGiftVoucherModal);
+    document.getElementById('voucher-start-new-btn').addEventListener('click', () => {
+      closeGiftVoucherModal();
+      openNewBookConfirmModal(voucherBookType);
+    });
+
+    document.getElementById('new-book-cancel-btn').addEventListener('click', closeNewBookConfirmModal);
+    document.getElementById('new-book-confirm-btn').addEventListener('click', executeStartNewBook);
+
+    // 스티커 미리보기(도감) 모달 이벤트
+    document.getElementById('open-preview-stickers-btn').addEventListener('click', openPreviewStickersModal);
+    document.getElementById('open-preview-ar-stickers-btn').addEventListener('click', openPreviewStickersModal);
+    document.getElementById('preview-stickers-close-btn').addEventListener('click', closePreviewStickersModal);
+    document.getElementById('preview-select-all-btn').addEventListener('click', () => {
+      state.enabledStickerIds = null;
+      saveState();
+      renderPreviewStickersModal();
+      renderStickerBook();
+      showToast('17가지 스티커를 모두 선택했어요!', true);
+    });
+
+    // 앱 초기화 실행
+    loadState();
+    renderAll();
+
+    // ==========================================
+    // 12. 단일 파일 전용: 홈 화면 바로가기 앱 아이콘 & 매니페스트 자동 생성
+    // ==========================================
+    (function setupStandaloneAppIcon() {
+      try {
+        const size = 512;
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+
+        // 1) 둥근 사각형 파스텔 핑크 배경
+        const pad = 16;
+        const r = 112;
+        const grad = ctx.createLinearGradient(0, 0, size, size);
+        grad.addColorStop(0, '#ffc2d4');
+        grad.addColorStop(0.5, '#ffa8c2');
+        grad.addColorStop(1, '#ff94b4');
+
+        ctx.beginPath();
+        ctx.roundRect(pad, pad, size - pad * 2, size - pad * 2, r);
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        // 2) 안쪽 크림색 스티커북 카드 프레임
+        const innerPad = 48;
+        ctx.beginPath();
+        ctx.roundRect(innerPad, innerPad, size - innerPad * 2, size - innerPad * 2, 84);
+        ctx.fillStyle = '#fff9fb';
+        ctx.fill();
+        ctx.lineWidth = 6;
+        ctx.strokeStyle = '#ff85a6';
+        ctx.stroke();
+
+        // 3) 테두리 아기자기한 꽃과 별 장식
+        function drawMiniStar(cx, cy, outerR, color) {
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.beginPath();
+          for (let i = 0; i < 5; i++) {
+            const a1 = (i * 72 - 90) * Math.PI / 180;
+            const a2 = (i * 72 + 36 - 90) * Math.PI / 180;
+            ctx.lineTo(Math.cos(a1) * outerR, Math.sin(a1) * outerR);
+            ctx.lineTo(Math.cos(a2) * (outerR * 0.48), Math.sin(a2) * (outerR * 0.48));
+          }
+          ctx.closePath();
+          ctx.fillStyle = color;
+          ctx.fill();
+          ctx.lineWidth = 3.5;
+          ctx.strokeStyle = '#5a382e';
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        function drawMiniFlower(cx, cy, petalColor) {
+          ctx.save();
+          ctx.translate(cx, cy);
+          for (let i = 0; i < 5; i++) {
+            const ang = (i * 72) * Math.PI / 180;
+            ctx.beginPath();
+            ctx.arc(Math.cos(ang) * 11, Math.sin(ang) * 11, 8.5, 0, Math.PI * 2);
+            ctx.fillStyle = petalColor;
+            ctx.fill();
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#5a382e';
+            ctx.stroke();
+          }
+          ctx.beginPath();
+          ctx.arc(0, 0, 7, 0, Math.PI * 2);
+          ctx.fillStyle = '#ffd43b';
+          ctx.fill();
+          ctx.lineWidth = 2.5;
+          ctx.strokeStyle = '#5a382e';
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        function drawMiniHeart(cx, cy, s, color) {
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.scale(s, s);
+          ctx.beginPath();
+          ctx.moveTo(0, 10);
+          ctx.bezierCurveTo(-16, -2, -16, -16, 0, -7);
+          ctx.bezierCurveTo(16, -16, 16, -2, 0, 10);
+          ctx.closePath();
+          ctx.fillStyle = color;
+          ctx.fill();
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#5a382e';
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        drawMiniFlower(95, 95, '#ff85a2');
+        drawMiniFlower(417, 95, '#ffd43b');
+        drawMiniFlower(95, 417, '#b197fc');
+        drawMiniFlower(417, 417, '#ff85a2');
+        drawMiniStar(256, 72, 16, '#ffd43b');
+        drawMiniStar(74, 256, 15, '#74c0fc');
+        drawMiniStar(438, 256, 15, '#69db7c');
+        drawMiniHeart(256, 442, 1.15, '#ff6b8b');
+
+        // 4) 상단 타이틀 텍스트 ("에이미" / "칭찬 스티커북")
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#4a2c2a';
+        ctx.font = 'bold 46px "Jua", "Noto Sans KR", sans-serif';
+        ctx.fillText('에이미', 256, 134);
+        ctx.font = 'bold 40px "Jua", "Noto Sans KR", sans-serif';
+        ctx.fillText('칭찬 스티커북', 256, 184);
+
+        // 5) 중앙 귀여운 핑크 스티커 다이어리 책 일러스트
+        ctx.save();
+        ctx.translate(232, 316);
+        ctx.rotate(-0.12);
+
+        // 책 표지 그림자 및 뒷표지
+        ctx.beginPath();
+        ctx.roundRect(-72, -84, 144, 174, 20);
+        ctx.fillStyle = '#ff6b93';
+        ctx.fill();
+        ctx.lineWidth = 6;
+        ctx.strokeStyle = '#5a382e';
+        ctx.stroke();
+
+        // 책 옆면(책등)
+        ctx.beginPath();
+        ctx.roundRect(-72, -84, 26, 174, [20, 4, 4, 20]);
+        ctx.fillStyle = '#f04e79';
+        ctx.fill();
+        ctx.stroke();
+
+        // 책 앞표지
+        ctx.beginPath();
+        ctx.roundRect(-48, -84, 120, 166, [6, 20, 20, 6]);
+        ctx.fillStyle = '#ff8fab';
+        ctx.fill();
+        ctx.stroke();
+
+        // 책 가운데 큰 하트 스티커
+        drawMiniHeart(14, -6, 3.1, '#ff477e');
+        // 하트 반짝이
+        ctx.beginPath();
+        ctx.ellipse(-4, -22, 8, 4.5, -0.5, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        ctx.fill();
+
+        ctx.restore();
+
+        // 6) 책 주변 떠다니는 스티커들 & 귀여운 아기토끼 친구
+        drawMiniStar(144, 250, 18, '#ffd43b');
+        drawMiniHeart(138, 344, 1.35, '#ff6b6b');
+        drawMiniStar(176, 396, 17, '#69db7c');
+        drawMiniStar(342, 244, 17, '#74c0fc');
+
+        // 오른쪽 아래 귀여운 아기토끼 캐릭터
+        ctx.save();
+        ctx.translate(358, 358);
+        // 토끼 귀
+        ctx.beginPath();
+        ctx.ellipse(-14, -44, 10, 24, -0.15, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffe5d9';
+        ctx.fill();
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = '#5a382e';
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.ellipse(14, -44, 10, 24, 0.15, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffe5d9';
+        ctx.fill();
+        ctx.stroke();
+
+        // 토끼 얼굴
+        ctx.beginPath();
+        ctx.ellipse(0, -10, 34, 28, 0, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffe5d9';
+        ctx.fill();
+        ctx.stroke();
+
+        // 토끼 눈과 볼터치
+        ctx.fillStyle = '#4a2c2a';
+        ctx.beginPath();
+        ctx.arc(-11, -12, 3.8, 0, Math.PI * 2);
+        ctx.arc(11, -12, 3.8, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#ff9ebb';
+        ctx.beginPath();
+        ctx.arc(-19, -5, 5.5, 0, Math.PI * 2);
+        ctx.arc(19, -5, 5.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 토끼 입
+        ctx.beginPath();
+        ctx.arc(0, -6, 4.5, 0.1 * Math.PI, 0.9 * Math.PI);
+        ctx.lineWidth = 3.2;
+        ctx.strokeStyle = '#4a2c2a';
+        ctx.stroke();
+        ctx.restore();
+
+        // 생성된 이미지를 PNG Data URL로 변환하여 아이콘 & 매니페스트에 자동 주입
+        const iconDataUrl = canvas.toDataURL('image/png');
+
+        const faviconEl = document.getElementById('app-favicon');
+        const appleIconEl = document.getElementById('app-apple-icon');
+        const manifestEl = document.getElementById('app-manifest');
+
+        if (faviconEl) faviconEl.href = iconDataUrl;
+        if (appleIconEl) appleIconEl.href = iconDataUrl;
+
+        if (manifestEl) {
+          const manifestObj = {
+            name: '에이미 칭찬 스티커북',
+            short_name: '에이미 스티커북',
+            start_url: window.location.href,
+            display: 'standalone',
+            background_color: '#fff6f9',
+            theme_color: '#ffb5c8',
+            icons: [
+              {
+                src: iconDataUrl,
+                sizes: '512x512',
+                type: 'image/png',
+                purpose: 'any maskable'
+              }
+            ]
+          };
+          const manifestJson = JSON.stringify(manifestObj);
+          manifestEl.href = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(manifestJson);
+        }
+      } catch (e) {
+        // 아이콘 생성 예외 무시
+      }
+    })();
+  </script>
+</body>
+</html>
